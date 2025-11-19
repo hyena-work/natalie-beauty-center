@@ -1,0 +1,2802 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Natalie Beauty Center - Quản lý</title>
+    <!-- Tải Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Thêm thư viện icon (Lucide) -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <!-- Google Fonts (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overscroll-behavior: none;
+        }
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            appearance: none;
+-webkit-appearance: none;
+-moz-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+    -webkit-appearance: none;
+}
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+    </style>
+    
+    <!-- Cấu hình màu "vàng đồng" (gold) chủ đạo -->
+    <script>
+        
+        
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Màu #efbf04
+                        primary: {
+                            light: '#fef9c3', 
+                            DEFAULT: '#efbf04', 
+                            medium: '#d4a903', 
+                            dark: '#b08d02'
+                        },
+                        'text-dark': '#1f2937', // gray-800
+                        'bg-light': '#f9fafb'  // gray-50
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-100 antialiased">
+
+    <!-- 
+      PHẦN 1: TRANG ĐĂNG NHẬP ADMIN (TAI_KHOAN)
+    -->
+    <div id="admin-login-page" class="min-h-screen flex items-center justify-center bg-stone-800 px-4">
+        <div class="max-w-md w-full bg-white rounded-lg shadow-xl p-8 space-y-6">
+            <div class="text-center">
+                <!-- Phóng to logo -->
+                <img class="h-16 w-auto mx-auto mb-4" 
+                     src="https://bizweb.dktcdn.net/thumb/medium/100/087/687/themes/727219/assets/logo.png?1762572547040" 
+                     alt="Logo Natalie Beauty Center"
+                     onerror="this.src='https://bizweb.dktcdn.net/thumb/medium/100/087/687/themes/727219/assets/logo.png?1762572547040';">
+                <h2 class="text-3xl font-bold text-primary-dark">Natalie Beauty Center</h2>
+                <p class="mt-2 text-lg text-gray-700">Đăng nhập Quản lý</p>
+            </div>
+            
+            <form id="admin-login-form" onsubmit="handleAdminLogin(event)" class="space-y-6">
+                <div>
+                    <!-- CSDL: TAI_KHOAN.SDT -->
+                    <label for="SDT" class="block text-sm font-medium text-gray-700">Số điện thoại</label>
+                    <input type="tel" id="SDT" name="SDT" required
+                           pattern="[0-9]{10}" title="Số điện thoại phải có 10 chữ số."
+                           class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
+                           placeholder="090xxxx123">
+                </div>
+                <div>
+                    <!-- CSDL: TAI_KHOAN.MatKhau -->
+                    <label for="MatKhau" class="block text-sm font-medium text-gray-700">Mật khẩu</label>
+                    <input type="password" id="MatKhau" name="MatKhau" required
+                           class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
+                           placeholder="••••••••">
+                </div>
+                
+                <div>
+                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                        Đăng nhập
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 
+      PHẦN 2: TRANG QUẢN LÝ ADMIN (ADMIN DASHBOARD)
+    -->
+    <div id="admin-dashboard" class="hidden">
+        <!-- Lớp nền mờ cho modal (Sửa lỗi Z-index) -->
+        <div id="admin-modal-backdrop" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 z-40"></div>
+
+        <div class="flex h-screen bg-bg-light">
+            <!-- Sidebar (Nền tối) -->
+            <nav class="w-64 bg-stone-800 shadow-lg flex flex-col flex-shrink-0 text-gray-300">
+                <!-- Logo Admin -->
+                <div class="h-20 flex items-center justify-center px-4">
+                    <!-- Phóng to logo -->
+                    <img class="h-16 w-auto" 
+                         src="https://bizweb.dktcdn.net/thumb/medium/100/087/687/themes/727219/assets/logo.png?1762572547040" 
+                         alt="Logo Natalie Beauty Center"
+                         onerror="this.src='https://bizweb.dktcdn.net/thumb/medium/100/087/687/themes/727219/assets/logo.png?1762572547040';">
+                </div>
+                
+                <!-- Menu -->
+                <ul class="flex-grow py-4 space-y-1">
+                    <li>
+                        <a href="#" onclick="showAdminTab('appointments')" class="admin-tab-link flex items-center px-6 py-3 text-primary-light bg-stone-700 border-r-4 border-primary" data-tab="appointments">
+                            <span class="mr-3" id="icon-appointments"></span>
+                            Quản lý lịch hẹn
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showAdminTab('customers')" class="admin-tab-link flex items-center px-6 py-3 hover:text-primary-light hover:bg-stone-700" data-tab="customers">
+                            <span class="mr-3" id="icon-customers"></span>
+                            Quản lý khách hàng
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showAdminTab('staff')" class="admin-tab-link flex items-center px-6 py-3 hover:text-primary-light hover:bg-stone-700" data-tab="staff">
+                            <span class="mr-3" id="icon-staff"></span>
+                            Quản lý nhân viên
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showAdminTab('services')" class="admin-tab-link flex items-center px-6 py-3 hover:text-primary-light hover:bg-stone-700" data-tab="services">
+                            <span class="mr-3" id="icon-services"></span>
+                            Quản lý dịch vụ
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showAdminTab('reports')" class="admin-tab-link flex items-center px-6 py-3 hover:text-primary-light hover:bg-stone-700" data-tab="reports">
+                            <span class="mr-3" id="icon-reports"></span>
+                            Báo cáo / Thống kê
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="p-4 border-t border-stone-700">
+                    <button onclick="handleAdminLogout()" class="w-full flex items-center justify-center px-4 py-2 border border-stone-600 rounded-md shadow-sm text-sm font-medium text-gray-300 hover:bg-stone-700">
+                        <span class="mr-2" id="icon-logout"></span>
+                        Đăng xuất
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Main Content Area -->
+            <main class="flex-1 flex flex-col overflow-hidden">
+                <!-- Header của Main Content (Nền tối) -->
+                <header class="h-16 bg-stone-800 shadow-sm flex items-center justify-between px-6">
+                    <h1 id="admin-tab-title" class="text-2xl font-semibold text-white">Quản lý lịch hẹn</h1>
+                </header>
+                
+                <!-- Nội dung các Tab (có thể cuộn) -->
+                <div class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+                    
+                    <!-- Tab 1: Quản lý Lịch hẹn (LICH_HEN) -->
+                    <div id="tab-appointments" class="admin-tab-content space-y-6">
+                        
+                        <!-- Các ô thống kê -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="bg-white p-5 rounded-lg shadow-lg flex items-center justify-between">
+                                <div>
+                                    <div class="text-sm font-medium text-gray-500">Lịch hẹn</div>
+                                    <div id="stats-total" class="text-3xl font-bold text-text-dark">0</div>
+                                </div>
+                                <div class="p-3 rounded-full bg-primary-light text-primary-dark" id="icon-stats-total"></div>
+                            </div>
+                            <div class="bg-white p-5 rounded-lg shadow-lg flex items-center justify-between">
+                                <div>
+                                    <div class="text-sm font-medium text-gray-500">Chờ xác nhận</div>
+                                    <div id="stats-pending" class="text-3xl font-bold text-text-dark">0</div>
+                                </div>
+                                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600" id="icon-stats-pending"></div>
+                            </div>
+                            <div class="bg-white p-5 rounded-lg shadow-lg flex items-center justify-between">
+                                <div>
+                                    <div class="text-sm font-medium text-gray-500">Doanh thu (dự kiến)</div>
+                                    <div id="stats-revenue" class="text-3xl font-bold text-text-dark">0đ</div>
+                                </div>
+                                <div class="p-3 rounded-full bg-green-100 text-green-600" id="icon-stats-revenue"></div>
+                            </div>
+                        </div>
+
+                        <!-- Thanh công cụ -->
+                        <div class="bg-white p-4 rounded-lg shadow-lg">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <!-- Tìm kiếm -->
+                               
+                                <div class="md:col-span-2">
+                                    <label for="search-appointment" class="block text-sm font-medium text-gray-700">Tìm kiếm</label>
+                                    <input type="text" id="search-appointment" placeholder="Tìm SĐT, tên khách hàng..."
+                                           oninput="loadAndRenderAppointments()"
+                                           class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                                </div>
+                                <!-- Lọc cơ sở (CO_SO) -->
+                                <div>
+                                    <label for="filter-MaCS-app" class="block text-sm font-medium text-gray-700">Cơ sở</label> 
+                                    <select id="filter-MaCS-app" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                                        <option value="all">Tất cả cơ sở</option>
+                                        <!-- JS sẽ thêm các cơ sở ở đây -->
+                                    </select>
+                                
+                                </div>
+                                <!-- Nút Lọc (Áp dụng) -->
+                                <div class="self-end">
+                                    <button onclick="loadAndRenderAppointments()" class="w-full flex items-center justify-center bg-primary hover:bg-primary-medium text-white font-medium py-2 px-4 rounded-lg shadow-md transition duration-300">
+                                        <span class="mr-2" id="icon-filter"></span>
+                                        Lọc
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Bộ lọc Khoảng thời gian (NgayDat) -->
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+                                <div>
+                                    <label for="filter-date-start" class="block text-sm font-medium text-gray-700">Từ ngày</label>
+                                    <input type="date" id="filter-date-start" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                                </div>
+                                <div>
+                                    <label for="filter-date-end" class="block text-sm font-medium text-gray-700">Đến ngày</label>
+                                    <input type="date" id="filter-date-end" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                                </div>
+                                <div class="self-end flex space-x-2">
+                                    <button onclick="filterToday()" class="flex-1 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-md transition duration-300">
+                                        <span class="mr-2" id="icon-today"></span>
+                                        Hôm nay
+                                    </button>
+                                    <button onclick="resetDateFilter()" class="flex-shrink-0 flex items-center justify-center bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-3 rounded-lg shadow-md transition duration-300" title="Bỏ lọc ngày">
+                                        <span id="icon-reset-date"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bảng dữ liệu (LICH_HEN) -->
+                        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                            <h3 id="appointment-table-title" class="text-lg font-semibold text-text-dark p-4 border-b">Lịch hẹn</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full min-w-max">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chi tiết lịch hẹn</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dịch vụ</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nhân viên</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="appointments-table-body" class="bg-white divide-y divide-gray-200">
+                                        <!-- Dữ liệu sẽ được render bằng JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: Quản lý Khách hàng (KHACH_HANG) -->
+                    <div id="tab-customers" class="admin-tab-content hidden space-y-6">
+                        <!-- Thanh công cụ -->
+                        <div class="flex flex-col md:flex-row justify-between items-center space-y-3 md:space-y-0 bg-white p-4 rounded-lg shadow-lg">
+                            <div class="w-full md:w-1/2">
+                                <label for="search-customer" class="block text-sm font-medium text-gray-700">Tìm kiếm</label>
+                                <input type="text" id="search-customer" placeholder="Tìm SĐT, tên khách hàng..." 
+                                       oninput="loadAndRenderCustomers()"
+                                       class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                            </div>
+                            <div class="flex space-x-3 self-end">
+                                <button onclick="sortCustomersBySpending()" class="flex items-center bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg shadow-md transition duration-300">
+                                    <span class="mr-2" id="icon-sort"></span>
+                                    Sắp xếp
+                                </button>
+                                <button onclick="openCustomerModal(null)" class="flex items-center bg-primary hover:bg-primary-medium text-white font-medium py-2 px-4 rounded-lg shadow-md transition duration-300">
+                                    <span class="mr-2" id="icon-add-customer"></span>
+                                    Thêm khách hàng
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Bảng dữ liệu (KHACH_HANG) -->
+                        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full min-w-max">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên khách hàng</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số điện thoại</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng chi tiêu</th>
+                                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="customers-table-body" class="bg-white divide-y divide-gray-200">
+                                        <!-- Dữ liệu sẽ được render bằng JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab 3: Quản lý Nhân viên (NHAN_VIEN) -->
+                    <div id="tab-staff" class="admin-tab-content hidden space-y-6">
+                        <!-- Thanh công cụ -->
+                        <div class="flex flex-col md:flex-row justify-between items-center space-y-3 md:space-y-0 bg-white p-4 rounded-lg shadow-lg">
+                            <div class="w-full md:w-1/2">
+                                <label for="search-staff" class="block text-sm font-medium text-gray-700">Tìm kiếm</label>
+                                <input type="text" id="search-staff" placeholder="Tìm tên nhân viên, SĐT..."
+                                       oninput="loadAndRenderStaff()"
+                                       class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                            </div>
+                            
+                            <!-- Bộ lọc Chuyên môn (MaNhomDV) & Cơ sở (MaCS) -->
+                            <div class="w-full md:w-auto">
+                                <label for="filter-staff-MaNhomDV" class="block text-sm font-medium text-gray-700">Chuyên môn</label>
+                                <select id="filter-staff-MaNhomDV" onchange="loadAndRenderStaff()" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                                    <option value="all">Tất cả chuyên môn</option>
+                                    <!-- JS sẽ thêm các nhóm dịch vụ ở đây -->
+                                </select>
+                            </div>
+                            <div class="w-full md:w-auto">
+                                <label for="filter-staff-MaCS" class="block text-sm font-medium text-gray-700">Cơ sở</label>
+                                <select id="filter-staff-MaCS" onchange="loadAndRenderStaff()" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                                    <option value="all">Tất cả cơ sở</option>
+                                    <!-- JS sẽ thêm các cơ sở ở đây -->
+                                </select>
+                            </div>
+                            <button id="add-staff-btn"
+                                onclick="openStaffModal(null)"
+                                class="self-end flex items-center justify-center bg-primary hover:bg-primary-medium text-white font-medium py-2 px-4 rounded-lg shadow-md transition duration-300">
+                                <span class="mr-2" id="icon-add-staff"></span>
+                                Thêm nhân viên
+                            </button>
+                        </div>
+                        <!-- Bảng dữ liệu (NHAN_VIEN) -->
+                        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full min-w-max">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên nhân viên</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số điện thoại</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chuyên môn</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cơ sở</th>
+                                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="staff-table-body" class="bg-white divide-y divide-gray-200">
+                                        <!-- Dữ liệu sẽ được render bằng JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- MODAL LỊCH LÀM VIỆC NHÂN VIÊN -->
+                        <div id="employee-schedule-modal" class="hidden fixed inset-0 z-50 overflow-y-auto p-4" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                                
+                                <!-- Overlay (Nền tối) -->
+                                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeAdminModal('employee-schedule-modal')"></div>
+
+                                <!-- Nội dung Modal -->
+                                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                                    
+                                    <!-- Header -->
+                                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-gray-200">
+                                        <div class="flex justify-between items-center">
+                                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="emp-schedule-title">
+                                                Lịch làm việc sắp tới
+                                            </h3>
+                                            <button onclick="closeAdminModal('employee-schedule-modal')" class="text-gray-400 hover:text-gray-500">
+                                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Body (Danh sách lịch) -->
+                                    <div class="bg-gray-50 px-4 py-4 sm:p-6 max-h-96 overflow-y-auto">
+                                        <ul id="emp-schedule-list" class="space-y-3">
+                                            <!-- JS sẽ thêm các lịch hẹn vào đây -->
+                                            <!-- Ví dụ: -->
+                                            <!-- <li class="bg-white p-3 rounded-md shadow-sm border border-gray-200">...</li> -->
+                                        </ul>
+                                        <p id="emp-schedule-empty" class="hidden text-center text-gray-500 italic mt-4">Nhân viên này chưa có lịch hẹn nào sắp tới.</p>
+                                    </div>
+
+                                    <!-- Footer -->
+                                    <div class="bg-white px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                        <button type="button" onclick="closeAdminModal('employee-schedule-modal')" 
+                                                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                            Đóng
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab 4: Quản lý Dịch vụ (DICH_VU) -->
+                    <div id="tab-services" class="admin-tab-content hidden space-y-6">
+                        <!-- Thanh công cụ -->
+                        <div class="flex flex-col md:flex-row justify-between items-center space-y-3 md:space-y-0 bg-white p-4 rounded-lg shadow-lg">
+                            <div class="w-full md:w-1/2">
+                                <label for="search-service" class="block text-sm font-medium text-gray-700">Tìm kiếm</label>
+                                <input type="text" id="search-service" placeholder="Tìm kiếm tên dịch vụ..." 
+                                       oninput="loadAndRenderServices()"
+                                       class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                            </div>
+                            <div class="flex space-x-3 self-end">
+                                <button onclick="openServiceGroupModal()" class="flex items-center bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg shadow-md transition duration-300">
+                                    <span class="mr-2" id="icon-group"></span>
+                                    Quản lý Nhóm
+                                </button>
+                                <button onclick="openServiceModal(null)" class="flex items-center bg-primary hover:bg-primary-medium text-white font-medium py-2 px-4 rounded-lg shadow-md transition duration-300">
+                                    <span class="mr-2" id="icon-add-service"></span>
+                                    Thêm dịch vụ
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Bảng dữ liệu (DICH_VU) -->
+                        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full min-w-max">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên dịch vụ</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nhóm dịch vụ</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thời lượng (phút)</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giá</th>
+                                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="services-table-body" class="bg-white divide-y divide-gray-200">
+                                        <!-- Dữ liệu sẽ được render bằng JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab 5: Báo cáo / Thống kê -->
+                    <div id="tab-reports" class="admin-tab-content hidden space-y-6">
+                        
+                        <!-- Khối 1: Báo cáo chung -->
+                        <div id="general-report-block" class="bg-white p-6 rounded-lg shadow-lg">
+                            <h2 class="text-xl font-semibold text-text-dark mb-4">Báo cáo chung</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                                <div>
+                                    <label for="report-date-start" class="block text-sm font-medium text-gray-700">Từ ngày</label>
+                                    <input type="date" id="report-date-start" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                                </div>
+                                <div>
+                                    <label for="report-date-end" class="block text-sm font-medium text-gray-700">Đến ngày</label>
+                                    <input type="date" id="report-date-end" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                                </div>
+                                <div>
+                                    <label for="report-type" class="block text-sm font-medium text-gray-700">Loại Báo cáo</label>
+                                    <select id="report-type" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                                        <option value="revenue">Doanh thu</option>
+                                        <option value="count">Số lượng lịch hẹn</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="report-group-by" class="block text-sm font-medium text-gray-700">Xem theo</label>
+                                    <select id="report-group-by" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                                        <option value="DICH_VU">Dịch vụ</option>
+                                        <option value="NHOM_DV">Nhóm dịch vụ</option>
+                                        <option value="NHAN_VIEN">Nhân viên</option>
+                                        <option value="KHACH_HANG">Khách hàng</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                            <button onclick="generateReport()" class="flex items-center bg-primary hover:bg-primary-medium text-white font-medium py-2 px-4 rounded-lg shadow-md transition duration-300 whitespace-nowrap">
+                                <span class="mr-2" id="icon-view-report"></span>
+                                Xem báo cáo
+                            </button>
+                            <button onclick="exportGeneralReport()" 
+                                    title="Xuất Excel (.csv)"
+                                    class="inline-flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors whitespace-nowrap">
+                                
+                                <!-- Icon File Spreadsheet (Excel) (SVG Inline) -->
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                </svg>
+
+                                <!-- Text (Chữ) -->
+                                <span>Xuất Excel</span>
+                            </button>
+                            </div>
+                            
+                            <!-- Bảng kết quả chung -->
+                            <div id="report-results-container" class="mt-6 hidden">
+                                <h3 id="report-title" class="text-lg font-semibold text-text-dark mb-2">Kết quả báo cáo</h3>
+                                <div class="overflow-x-auto border rounded-lg">
+                                    <table class="w-full min-w-max">
+                                        <thead id="report-table-head" class="bg-gray-50"></thead>
+                                        <tbody id="report-table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Khối 2: Báo cáo Khách hàng Thân thiết -->
+                        <div id="vip-report-block" class="bg-white p-6 rounded-lg shadow-lg">
+                            <h2 class="text-xl font-semibold text-text-dark mb-4">Báo cáo khách hàng thân thiết</h2>
+                            <p class="text-sm text-gray-600 mb-4">Hiển thị khách hàng có tổng chi tiêu trên 10.000.000đ trong tháng đã chọn.</p>
+                            <div class="flex flex-wrap items-end gap-4 mb-4">
+                                <div>
+                                    <label for="vip-report-month" class="block text-sm font-medium text-gray-700">Chọn tháng</label>
+                                    <input type="month" id="vip-report-month" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                                </div>
+    
+                                <div class="flex space-x-2" class="self-end">
+                                    <button onclick="generateVipReport()" class="flex items-center bg-primary hover:bg-primary-medium text-white font-medium py-2 px-4 rounded-lg shadow-md transition duration-300 whitespace-nowrap">
+                                        <span class="mr-2" id="icon-view-vip-report"></span>
+                                        Xem báo cáo VIP
+                                    </button>
+                                    <button onclick="exportVipReport()" 
+                                            title="Xuất Excel (.csv)"
+                                            class="inline-flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors whitespace-nowrap">
+                                        
+                                        <!-- Icon File Spreadsheet (Excel) (SVG Inline) -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                        </svg>
+                                        
+                                        <!-- Text (Chữ) -->
+                                        <span>Xuất Excel</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Bảng kết quả VIP -->
+                            <div id="vip-report-results-container" class="mt-6 hidden">
+                                <h3 id="vip-report-title" class="text-lg font-semibold text-text-dark mb-2">Kết quả báo cáo</h3>
+                                <div class="overflow-x-auto border rounded-lg">
+                                    <table class="w-full min-w-max">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên khách hàng</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SĐT</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chi tiêu (tháng)</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số tháng VIP liên tiếp</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="vip-report-table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Khối 3: Báo cáo Tỉ lệ Trạng thái (TT_LICH_HEN) -->
+                        <div id="status-report-block" class="bg-white p-6 rounded-lg shadow-lg">
+                            <h2 class="text-xl font-semibold text-text-dark mb-4">Báo cáo tỉ lệ lịch hẹn theo trạng thái</h2>
+                            <div class="flex flex-wrap items-end gap-4 mb-4">
+                                <!-- Bộ lọc ngày -->
+                                <div>
+                                    <label for="status-report-date-start" class="block text-sm font-medium text-gray-700">Từ ngày</label>
+                                    <input type="date" id="status-report-date-start" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                                </div>
+                                <div>
+                                    <label for="status-report-date-end" class="block text-sm font-medium text-gray-700">Đến ngày</label>
+                                    <input type="date" id="status-report-date-end" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                                </div>
+                                
+                                <div class="flex space-x-2" class="self-end">
+                                    <button onclick="generateStatusReport()" class="flex items-center bg-primary hover:bg-primary-medium text-white font-medium py-2 px-4 rounded-lg shadow-md transition duration-300 whitespace-nowrap">
+                                        <span class="mr-2" id="icon-view-status-report"></span>
+                                        Xem báo cáo
+                                    </button>
+                                    <button onclick="exportStatusReport()" 
+                                            title="Xuất Excel (.csv)"
+                                            class="inline-flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors whitespace-nowrap">
+                                        
+                                        <!-- Icon File Spreadsheet (Excel) (SVG Inline) -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                        </svg>
+                                        
+                                        <!-- Text (Chữ) -->
+                                        <span>Xuất Excel</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Bảng kết quả Tỉ lệ -->
+                            <div id="status-report-results-container" class="mt-6 hidden">
+                                <h3 id="status-report-title" class="text-lg font-semibold text-text-dark mb-2">Kết quả báo cáo</h3>
+                                <div class="overflow-x-auto border rounded-lg">
+                                    <table class="w-full min-w-max">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lịch hẹn</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tỉ lệ (%)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="status-report-table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- 
+      PHẦN 3: MODALS (ADMIN) - ĐÃ CẬP NHẬT ID TRƯỜNG
+    -->
+
+    <!-- Modal 1: Sửa Lịch hẹn (LICH_HEN) -->
+    <div id="appointment-modal" class="hidden fixed inset-0 z-50 overflow-y-auto p-4" aria-labelledby="appointment-modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-lg shadow-xl overflow-hidden transform transition-all sm:max-w-lg sm:w-full">
+                <form id="appointment-form" onsubmit="handleAppointmentFormSubmit(event)">
+                    <div class="px-4 pt-5 pb-4 sm:p-6">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="appointment-modal-title">Sửa lịch hẹn</h3>
+                        <input type="hidden" id="MaDatLich_edit">
+                        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="app-TenKH" class="block text-sm font-medium text-gray-700">Tên khách hàng</label>
+                                <input type="text" id="app-TenKH" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+                            </div>
+                            <div>
+                                <label for="app-SDTKH" class="block text-sm font-medium text-gray-700">Số điện thoại</label>
+                                <input type="tel" id="app-SDTKH" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required
+                                       pattern="[0-9]{10}" title="Số điện thoại phải có 10 chữ số.">
+                            </div>
+                            <div>
+                                <label for="app-NgayDat" class="block text-sm font-medium text-gray-700">Ngày</label>
+                                <input type="date" id="app-NgayDat" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+                            </div>
+                            <div>
+                                <label for="app-ThoiGian" class="block text-sm font-medium text-gray-700">Giờ</label>
+                                <input type="time" id="app-ThoiGian" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="app-MaTT" class="block text-sm font-medium text-gray-700">Trạng thái</label>
+                                <select id="app-MaTT" onchange="updateDropdownColor(this)" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+                                    <!-- Các option sẽ được JS thêm vào -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary hover:bg-primary-medium text-white text-base font-medium sm:ml-3 sm:w-auto sm:text-sm">
+                            Lưu
+                        </button>
+                        <button type="button" onclick="closeAdminModal('appointment-modal')" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Hủy
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Thêm/Sửa Khách hàng (KHACH_HANG) -->
+    <div id="customer-modal" class="hidden fixed inset-0 z-50 overflow-y-auto p-4" aria-labelledby="customer-modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-lg shadow-xl overflow-hidden transform transition-all sm:max-w-lg sm:w-full">
+                <form id="customer-form" onsubmit="handleCustomerFormSubmit(event)">
+                    <div class="px-4 pt-5 pb-4 sm:p-6">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="customer-modal-title">Thêm khách hàng</h3>
+                        <input type="hidden" id="MaKH">
+                        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="TenKH" class="block text-sm font-medium text-gray-700">Tên khách hàng</label>
+                                <input type="text" id="TenKH" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+                            </div>
+                            <div>
+                                <label for="SDTKH" class="block text-sm font-medium text-gray-700">Số điện thoại</label>
+                                <input type="tel" id="SDTKH" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required
+                                       pattern="[0-9]{10}" title="Số điện thoại phải có 10 chữ số.">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary hover:bg-primary-medium text-white text-base font-medium sm:ml-3 sm:w-auto sm:text-sm">
+                            Lưu
+                        </button>
+                        <button type="button" onclick="closeAdminModal('customer-modal')" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Hủy
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Thêm/Sửa Nhân viên (NHAN_VIEN) -->
+    <div id="staff-modal" class="hidden fixed inset-0 z-50 overflow-y-auto p-4" aria-labelledby="staff-modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-lg shadow-xl overflow-hidden transform transition-all sm:max-w-lg sm:w-full">
+                <form id="staff-form" onsubmit="handleStaffFormSubmit(event)">
+                    <div class="px-4 pt-5 pb-4 sm:p-6">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="staff-modal-title">Thêm nhân viên</h3>
+                        <input type="hidden" id="MaNV">
+                        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="TenNV" class="block text-sm font-medium text-gray-700">Tên nhân viên</label>
+                                <input type="text" id="TenNV" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+                            </div>
+                            <div>
+                                <label for="SDTNV" class="block text-sm font-medium text-gray-700">Số điện thoại</label>
+                                <input type="tel" id="SDTNV" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required
+                                       pattern="[0-9]{10}" title="Số điện thoại phải có 10 chữ số.">
+                            </div>
+                            <div>
+                                <label for="staff-MaNhomDV" class="block text-sm font-medium text-gray-700">Chuyên môn</label>
+                                <select id="staff-MaNhomDV" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+                                    <option value="">-- Chọn chuyên môn --</option>
+                                    <!-- JS sẽ thêm các nhóm dịch vụ ở đây -->
+                                </select>
+                            </div>
+                            <div>
+                                <label for="staff-MaCS" class="block text-sm font-medium text-gray-700">Cơ sở</label>
+                                <select id="staff-MaCS" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+                                    <option value="">-- Chọn cơ sở --</option>
+                                    <!-- JS sẽ thêm các cơ sở ở đây -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary hover:bg-primary-medium text-white text-base font-medium sm:ml-3 sm:w-auto sm:text-sm">
+                            Lưu
+                        </button>
+                        <button type="button" onclick="closeAdminModal('staff-modal')" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Hủy
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 4: Thêm/Sửa Dịch vụ (DICH_VU) -->
+    <div id="service-modal" class="hidden fixed inset-0 z-50 overflow-y-auto p-4" aria-labelledby="service-modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-lg shadow-xl overflow-hidden transform transition-all sm:max-w-lg sm:w-full">
+                <form id="service-form" onsubmit="handleServiceFormSubmit(event)">
+                    <div class="px-4 pt-5 pb-4 sm:p-6">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="service-modal-title">Thêm dịch vụ</h3>
+                        <input type="hidden" id="MaDV">
+                        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="md:col-span-2">
+                                <label for="TenDV" class="block text-sm font-medium text-gray-700">Tên dịch vụ</label>
+                                <input type="text" id="TenDV" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+                            </div>
+                            <div>
+                                <label for="service-MaNhomDV" class="block text-sm font-medium text-gray-700">Nhóm dịch vụ</label>
+                                <select id="service-MaNhomDV" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+                                    <option value="">-- Chọn nhóm --</option>
+                                    <!-- JS sẽ thêm các nhóm dịch vụ ở đây -->
+                                </select>
+                            </div>
+                            <div>
+                                <label for="ThoiLuong" class="block text-sm font-medium text-gray-700">Thời lượng (phút)</label>
+                                <input type="number" id="ThoiLuong" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+                            </div>
+                            <div>
+                                <label for="DonGiaDV" class="block text-sm font-medium text-gray-700">Giá</label>
+                                <input type="number" id="DonGiaDV" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="MoTaDV" class="block text-sm font-medium text-gray-700">Mô tả</label>
+                                <textarea id="MoTaDV" rows="3" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" placeholder="Mô tả ngắn về dịch vụ..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary hover:bg-primary-medium text-white text-base font-medium sm:ml-3 sm:w-auto sm:text-sm">
+                            Lưu
+                        </button>
+                        <button type="button" onclick="closeAdminModal('service-modal')" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Hủy
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal 5: Quản lý Nhóm Dịch vụ (NHOM_DV) -->
+    <div id="service-group-modal" class="hidden fixed inset-0 z-50 overflow-y-auto p-4" aria-labelledby="service-group-modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-lg shadow-xl overflow-hidden transform transition-all sm:max-w-md sm:w-full">
+                <form id="service-group-form" onsubmit="handleAddServiceGroup(event)">
+                    <div class="px-4 pt-5 pb-4 sm:p-6">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="service-group-modal-title">Quản lý Nhóm</h3>
+                        <div class="mt-4">
+                            <label for="NhomDV_new" class="block text-sm font-medium text-gray-700">Tên nhóm mới</label>
+                            <input type="text" id="NhomDV_new" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" placeholder="Tên nhóm mới...">
+                        </div>
+                        
+                        <div class="mt-2">
+                            <button type="submit" class="w-full px-4 py-2 bg-primary hover:bg-primary-medium text-white rounded-md shadow-sm">Thêm</button>
+                        </div>
+                        <div class="mt-6">
+                            <h4 class="text-md font-medium text-gray-900">Các nhóm hiện có</h4>
+                            <ul id="service-group-list" class="mt-2 max-h-40 overflow-y-auto border border-gray-200 rounded-md divide-y divide-gray-200">
+                                <!-- JS sẽ thêm các nhóm ở đây -->
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="button" onclick="closeAdminModal('service-group-modal')" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:w-auto sm:text-sm">
+                            Đóng
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal 6: Xác nhận Xóa (Admin) -->
+    <div id="delete-confirm-modal" class="hidden fixed inset-0 z-50 overflow-y-auto p-4" aria-labelledby="delete-modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-lg shadow-xl overflow-hidden transform transition-all sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <!-- Icon Cảnh báo -->
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10" id="icon-warning">
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="delete-modal-title">
+                                Xác nhận Xóa
+                            </h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500">
+                                    Bạn có chắc chắn muốn xóa <strong id="delete-item-name" class="font-medium text-gray-700"></strong>?
+                                    Hành động này không thể hoàn tác.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" id="confirm-delete-btn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm">
+                        Xóa
+                    </button>
+                    <button type="button" onclick="closeAdminModal('delete-confirm-modal')" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Hủy
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal 7: Xem Chi tiết Lịch hẹn -->
+    <div id="appointment-details-modal" class="hidden fixed inset-0 z-50 overflow-y-auto p-4" aria-labelledby="details-modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-lg shadow-xl overflow-hidden transform transition-all sm:max-w-lg sm:w-full">
+                <div class="px-4 pt-5 pb-4 sm:p-6">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xl leading-6 font-medium text-gray-900" id="details-modal-title">
+                            Chi tiết lịch hẹn
+                        </h3>
+                        <button onclick="closeAdminModal('appointment-details-modal')" class="text-gray-400 hover:text-gray-600" id="icon-close-details"></button>
+                    </div>
+                    <div class="mt-4 space-y-4">
+                        <!-- Thông tin khách hàng -->
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <h4 class="font-semibold text-text-dark">Thông tin khách hàng:</h4>
+                            <p class="text-text-dark">Họ tên: <span id="details-TenKH" class="font-medium"></span></p>
+                            <p class="text-text-dark">Số điện thoại: <span id="details-SDTKH" class="font-medium"></span></p>
+                        </div>
+                        
+                        <!-- Chi tiết lịch hẹn -->
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <h4 class="font-semibold text-text-dark">Chi tiết lịch hẹn:</h4>
+                            <p class="text-text-dark">Cơ sở: <span id="details-TenCS" class="font-medium"></span></p>
+                            <p class="text-text-dark">Thời gian: <span id="details-ThoiGian" class="font-medium"></span></p>
+                            <p class="text-text-dark">Trạng thái: <span id="details-TrangThai" class="font-medium px-2 py-0.5 rounded-full"></span></p>
+                            <p class="text-text-dark mt-2">Ghi chú: <span id="details-GhiChu" class="font-medium italic text-gray-600"></span></p>
+                        </div>
+                        
+                        <!-- Dịch vụ (CT_PHIEU_DAT) -->
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <h4 class="font-semibold text-text-dark">Dịch vụ đã chọn:</h4>
+                            <ul id="details-service-list" class="list-disc list-inside space-y-1 text-text-dark mt-2">
+                                <!-- JS sẽ thêm dịch vụ ở đây -->
+                            </ul>
+                        </div>
+                        
+                        <!-- Tổng tiền (HOA_DON) -->
+                        <div class="p-4 bg-primary-light rounded-lg">
+                            <div class="grid grid-cols-2 gap-4 text-center">
+                                <div>
+                                    <h4 class="font-semibold text-primary-dark">Tổng thời lượng:</h4>
+                                    <p id="details-total-duration" class="text-lg font-bold text-primary-dark"></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-primary-dark">Tổng chi phí:</h4>
+                                    <p id="details-total-price" class="text-lg font-bold text-primary-dark"></p>
+                                </div>
+                            </div>
+                            
+                            <!-- Thanh toán 80% (CT_PHIEU_DAT.TienCoc) -->
+                            <div class="mt-4 border-t border-primary-dark/20 pt-3 text-center">
+                                <h4 class="font-semibold text-red-600">Cần thanh toán (80%):</h4>
+                                <p id="details-remaining-payment" class="text-xl font-bold text-red-600"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" onclick="closeAdminModal('appointment-details-modal')" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:w-auto sm:text-sm">
+                        Đóng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Toast Message (Thông báo thành công/lỗi) -->
+    <div id="toast" class="hidden fixed bottom-5 right-5 bg-green-500 text-white py-3 px-6 rounded-lg shadow-xl transition-opacity duration-300 z-[100]">
+        <span id="toast-message"></span>
+    </div>
+
+
+    <!-- 
+      PHẦN 4: JAVASCRIPT LOGIC (ADMIN) - ĐÃ CẬP NHẬT THEO CSDL
+    -->
+    <script> const SUPABASE_URL = 'https://vxvkrfmcivagishayagn.supabase.co'; // <-- Dán URL dự án của bạn
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4dmtyZm1jaXZhZ2lzaGF5YWduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI4NjkzNDUsImV4cCI6MjA3ODQ0NTM0NX0.iSQ7HSr_mHk-Kf8WOV4S6-21VAhQTITGHSHnhIeRfD4'; // <-- Dán Anon Key
+
+    const supaClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+    const statusColorMap = {
+    'Chờ xác nhận': 'bg-yellow-100 text-yellow-700',
+    'Đã xác nhận': 'bg-blue-100 text-blue-700',
+    'Đang thực hiện': 'bg-violet-100 text-violet-700',
+    'Đã thanh toán': 'bg-green-100 text-green-700',
+    'Hoàn thành': 'bg-emerald-100 text-emerald-700',
+    'Đã huỷ': 'bg-red-100 text-red-700',
+    'Không đến': 'bg-slate-100 text-slate-700'
+};
+        let appointmentStatuses = {};
+        
+        
+
+        // --- BIẾN TRẠNG THÁI CHUNG ---
+        const modalBackdrop = document.getElementById('admin-modal-backdrop');
+        let deleteCallback = null; // Lưu hàm callback khi xóa
+        let customerSortOrder = 'desc'; // 'asc' hoặc 'desc'
+        
+
+        // --- KHỞI TẠO ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Mặc định hiển thị Admin Login
+            showView('admin-login');
+            
+            // Render các icon bằng Lucide
+            renderIcons();
+            
+            // Đặt tháng mặc định cho Báo cáo VIP
+            document.getElementById('vip-report-month').value = new Date().toISOString().slice(0, 7);
+            
+        });
+        
+        // Tải dữ liệu CO_SO và NHOM_DV vào các bộ lọc
+        async function loadAndPopulateSelectors() {
+            // 1. Tải Cơ sở (CO_SO)
+            const { data: facilities, error: facilitiesError } = await supaClient
+                .from('CO_SO')
+                .select('*');
+            
+            // 2. Tải Nhóm Dịch vụ (NHOM_DV)
+            const { data: groups, error: groupsError } = await supaClient
+                .from('NHOM_DV')
+                .select('*');
+
+            if (facilitiesError || groupsError) {
+                console.error('Lỗi tải dữ liệu selectors:', facilitiesError || groupsError);
+                showToast('Lỗi tải dữ liệu lọc.', true);
+                return;
+            }
+
+            // 3. Nạp vào Bộ lọc (Filters)
+            const facilityFilters = [document.getElementById('filter-MaCS-app'), document.getElementById('filter-staff-MaCS')];
+            facilityFilters.forEach(select => {
+                select.innerHTML = '<option value="all">Tất cả cơ sở</option>';
+                facilities.forEach(facility => {
+                    select.innerHTML += `<option value="${facility.MaCS}">${facility.TenCS}</option>`;
+                });
+            });
+
+            const groupFilters = [document.getElementById('filter-staff-MaNhomDV')];
+            groupFilters.forEach(select => {
+                select.innerHTML = '<option value="all">Tất cả chuyên môn</option>';
+                groups.forEach(group => {
+                    select.innerHTML += `<option value="${group.MaNhomDV}">${group.NhomDV}</option>`;
+                });
+            });
+            
+            // 4. Nạp vào Form Modals
+            const facilityModals = [document.getElementById('staff-MaCS')];
+            facilityModals.forEach(select => {
+                select.innerHTML = '<option value="">-- Chọn cơ sở --</option>';
+                facilities.forEach(facility => {
+                    select.innerHTML += `<option value="${facility.MaCS}">${facility.TenCS}</option>`;
+                });
+            });
+
+            const groupModals = [document.getElementById('staff-MaNhomDV'), document.getElementById('service-MaNhomDV')];
+            groupModals.forEach(select => {
+                const placeholder = select.id === 'staff-MaNhomDV' ? '-- Chọn chuyên môn --' : '-- Chọn nhóm --';
+                select.innerHTML = `<option value="">${placeholder}</option>`;
+                groups.forEach(group => {
+                    // Loại trừ nhóm "Quản lý" (QL) khỏi form Dịch vụ
+                    if (select.id === 'service-MaNhomDV' && group.MaNhomDV === 'QL') {
+                        return;
+                    }
+                    select.innerHTML += `<option value="${group.MaNhomDV}">${group.NhomDV}</option>`;
+                });
+            });
+            //5. Tải Trạng thái (TT_LICH_HEN)
+            const { data: statuses, error: statusesError } = await supaClient
+                .from('TT_LICH_HEN')
+                .select('*');
+
+            if (statusesError) {
+                console.error('Lỗi tải trạng thái:', statusesError);
+                return;
+            }
+
+            // Nạp dữ liệu thật vào biến global
+            appointmentStatuses = {}; 
+            const statusSelect = document.getElementById('app-MaTT');
+            let statusOptions = '';
+            
+            statuses.forEach(status => {
+                // Nạp vào object global để tra cứu
+                appointmentStatuses[status.MaTT] = {
+                    TrangThai: status.TrangThai,
+                    // Giả sử CSDL của bạn có cột 'class' (nếu không, nó sẽ dùng mặc định)
+                    class: status.class || 'bg-gray-100 text-gray-800' 
+                };
+                // Tạo <option> cho modal
+                statusOptions += `<option value="${status.MaTT}">${status.TrangThai}</option>`;
+            });
+            
+            // Nạp các <option> vào modal sửa lịch hẹn
+            statusSelect.innerHTML = statusOptions;
+        }
+        
+        // Hàm render icon (sử dụng Lucide)
+        function renderIcons() {
+            if (typeof lucide === 'undefined' || !lucide.createElement) {
+                console.warn('Lucide library not loaded.');
+                return;
+            }
+            
+            const icons = {
+                'icon-appointments': 'CalendarDays',
+                'icon-customers': 'Users',
+                'icon-staff': 'UserCheck',
+                'icon-services': 'Sparkles',
+                'icon-reports': 'LineChart',
+                'icon-logout': 'LogOut',
+                'icon-add-customer': 'UserPlus',
+                'icon-add-staff': 'UserPlus',
+                'icon-add-service': 'PlusCircle',
+                'icon-stats-total': 'Calendar',
+                'icon-stats-pending': 'Clock',
+                'icon-stats-revenue': 'DollarSign',
+                'icon-filter': 'Filter',
+                'icon-today': 'CalendarCheck',
+                'icon-reset-date': 'History',
+                'icon-sort': 'ArrowUpDown',
+                'icon-group': 'Layers',
+                'icon-view-report': 'Eye',
+                'icon-view-vip-report': 'Award',
+                'icon-view-status-report': 'PieChart',
+                'icon-warning': 'AlertTriangle',
+                'icon-close-details': 'X'
+            };
+            
+            Object.keys(icons).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.innerHTML = ''; // Xóa nội dung cũ
+                    const iconName = icons[id];
+                    if (lucide.icons[iconName]) {
+                        const iconData = lucide.icons[iconName];
+                        const icon = lucide.createElement(iconData);
+                        
+                        let sizeClass = (id.startsWith('icon-stats')) ? ['w-8', 'h-8'] : ['w-5', 'h-5'];
+                        if (id === 'icon-warning') sizeClass = ['w-6', 'h-6'];
+                        if (id === 'icon-reset-date') sizeClass = ['w-5', 'h-5'];
+                        if (id === 'icon-close-details') sizeClass = ['w-6', 'h-6'];
+
+                        icon.classList.add(...sizeClass);
+                        el.appendChild(icon);
+                    } else {
+                        console.error(`Icon "${iconName}" not found in Lucide.`);
+                    }
+                }
+            });
+        }
+
+        // --- QUẢN LÝ VIEW CHUNG ---
+        
+        function showView(viewName) {
+            document.getElementById('admin-login-page').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.add('hidden');
+
+            if (viewName === 'admin-login') {
+                document.getElementById('admin-login-page').classList.remove('hidden');
+            } else if (viewName === 'admin') {
+                document.getElementById('admin-dashboard').classList.remove('hidden');
+            }
+        }
+        
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden', 'bg-green-500', 'bg-red-500', 'opacity-0');
+            
+            if (isError) {
+                toast.classList.add('bg-red-500');
+            } else {
+                toast.classList.add('bg-green-500');
+            }
+            
+            toast.classList.add('opacity-100');
+            
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.classList.add('hidden'), 300);
+            }, 3000);
+        }
+
+        // --- QUẢN LÝ MODAL ---
+        
+        function openAdminModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+            modalBackdrop.classList.remove('hidden');
+        }
+        
+        function closeAdminModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            const anyModalOpen = document.querySelector('.fixed.inset-0.z-50:not(.hidden)');
+            if (!anyModalOpen) {
+                modalBackdrop.classList.add('hidden');
+            }
+        }
+        
+        // --- LOGIC ĐĂNG NHẬP / ĐĂNG XUẤT ---
+        
+        function validatePhone(phone) {
+            return /^[0-9]{10}$/.test(phone);
+        }
+
+        async function handleAdminLogin(event) {
+            event.preventDefault();
+            
+            const phone = document.getElementById('SDT').value;
+            const password = document.getElementById('MatKhau').value;
+
+            // 1. Xác thực SĐT 10 số (giữ nguyên)
+            if (!validatePhone(phone)) {
+                showToast('Số điện thoại đăng nhập phải có 10 chữ số.', true);
+                return;
+            }
+            
+            // 2. TẠO EMAIL GIẢ (PHẦN QUAN TRỌNG NHẤT)
+            // (Bạn phải dùng chính xác đuôi mà bạn đã tạo ở Bước 1)
+            const fakeEmail = `${phone}@mail.com`;
+
+            // 3. Gọi Supabase Auth với email giả
+            const { data, error } = await supaClient.auth.signInWithPassword({
+                email: fakeEmail, // <-- Dùng email giả
+                password: password,
+            });
+
+            if (error) {
+                console.error('Lỗi đăng nhập:', error);
+                showToast('Đăng nhập thất bại. Sai SĐT hoặc mật khẩu.', true);
+            } else {
+                // Đăng nhập thành công
+                showToast('Đăng nhập thành công!');
+                loadInitialData(); // Tải dữ liệu thật
+                showView('admin');
+            }
+        }
+        
+        function handleAdminLogout() {
+            supaClient.auth.signOut(); // Đăng xuất khỏi Supabase
+            showView('admin-login');
+        }
+        
+        async function loadInitialData() {
+            console.log('--- BẮT ĐẦU TẢI DỮ LIỆU ---');
+            
+            await loadStatusData();
+
+            await loadAndPopulateSelectors();
+            console.log('1. Tải Selectors (Cơ sở, Nhóm DV) -> THÀNH CÔNG');
+            
+            await loadAndRenderAppointments(); 
+            console.log('2. Tải Lịch hẹn -> THÀNH CÔNG');
+
+            await loadAndRenderCustomers(); 
+            console.log('3. Tải Khách hàng -> THÀNH CÔNG');
+
+            await loadAndRenderStaff(); 
+            console.log('4. Tải Nhân viên -> THÀNH CÔNG');
+
+            await loadAndRenderServices();
+            console.log('5. Tải Dịch vụ -> THÀNH CÔNG');
+            setupRealtimeListener();
+            console.log('--- TẢI TẤT CẢ DỮ LIỆU HOÀN TẤT ---');
+        }
+
+        function setupRealtimeListener() {
+    console.log('Đang thiết lập Realtime cho LICH_HEN...');
+
+    const channel = supaClient
+      .channel('lich_hen_changes') // Đặt tên kênh (channel) bất kỳ
+      .on(
+        'postgres_changes', // Lắng nghe thay đổi CSDL
+        { 
+          event: 'INSERT', // Chỉ lắng nghe khi có 'INSERT' (thêm mới)
+          schema: 'public',
+          table: 'LICH_HEN' // Trên bảng LICH_HEN
+        },
+        (payload) => {
+          // Khi có lịch hẹn mới, Supabase sẽ gọi hàm này
+          
+          console.log('Phát hiện lịch hẹn MỚI!', payload.new);
+          
+          // Hiển thị thông báo (toast) cho admin biết
+          showToast('Có lịch hẹn mới, đang tự động cập nhật...', false);
+          
+          // Chạy lại hàm tải và render chính của bạn
+          // Nó sẽ tự động lấy dữ liệu mới nhất (bao gồm cả lịch hẹn mới)
+          loadAndRenderAppointments();
+        }
+      )
+      .subscribe((status) => {
+        // Hàm này báo cho bạn biết trạng thái kết nối
+        if (status === 'SUBSCRIBED') {
+          console.log('Đã kết nối Realtime thành công!');
+        } else {
+          console.log('Lỗi kết nối Realtime:', status);
+        }
+      });
+}
+
+        function showAdminTab(tabName) {
+            // Bước 1: Ẩn tất cả các tab (Cả bằng class và style)
+            document.querySelectorAll('.admin-tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+                tab.style.display = 'none'; // Buộc ẩn
+            });
+
+            // Bước 2: Hiển thị tab được chọn
+            const activeTab = document.getElementById(`tab-${tabName}`);
+            if (activeTab) {
+                activeTab.classList.remove('hidden');
+                activeTab.style.display = 'block'; // Buộc hiển thị
+            }
+
+            // Bước 3: Cập nhật link sidebar và title
+            document.querySelectorAll('.admin-tab-link').forEach(link => {
+                link.classList.remove('text-primary-light', 'bg-stone-700', 'border-r-4', 'border-primary');
+                link.classList.add('hover:text-primary-light', 'hover:bg-stone-700');
+                
+                if (link.dataset.tab === tabName) {
+                    link.classList.add('text-primary-light', 'bg-stone-700', 'border-r-4', 'border-primary');
+                    link.classList.remove('hover:text-primary-light', 'hover:bg-stone-700');
+                    document.getElementById('admin-tab-title').textContent = link.textContent.trim();
+                }
+            });
+        }
+
+        // --- TAB 1: QUẢN LÝ LỊCH HẸN ---
+        
+        function formatCurrency(value) {
+            if (typeof value !== 'number') return '0đ';
+            return value.toLocaleString('vi-VN') + 'đ';
+        }
+
+        // HÀM HELPER ĐÃ SỬA (RẤT QUAN TRỌNG)
+        function getJoinedAppointment(app) {
+            // 'app' bây giờ là một object lớn đã được join từ Supabase
+            
+            const date = new Date(app.NgayDat);
+            const appDate = date.toISOString().split('T')[0];
+            const appTime = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            
+            let totalDuration = 0;
+            let totalPrice = 0;
+            
+            
+            const services = (app.CT_PHIEU_DAT || []).map(ct => {
+    const service = ct.DICH_VU || {};
+    const staff = ct.NHAN_VIEN || {};
+    
+    const thoiLuong = service.ThoiLuong || 0;
+    const donGia = service.DonGiaDV || 0;
+    
+    totalDuration += thoiLuong;
+    totalPrice += donGia;
+    
+    return {
+        ...ct,
+        TenDV: service.TenDV || 'N/A',
+        TenNV: staff.TenNV || 'Bất kỳ',
+        DonGiaDV: donGia,
+        ThoiLuong: thoiLuong
+    };
+});
+
+            return {
+                ...app, 
+                appDate,
+                appTime,
+                // Đọc trực tiếp từ object con (KHÔNG CẦN HÀM TRA CỨU)
+                TenKH: app.KHACH_HANG ? app.KHACH_HANG.TenKH : 'Khách vãng lai',
+                SDTKH: app.KHACH_HANG ? app.KHACH_HANG.SDTKH : 'N/A',
+                TenCS: app.CO_SO ? app.CO_SO.TenCS : 'N/A',
+                
+                services,
+                totalPrice,
+                totalDuration
+            };
+        }
+
+        async function loadAndRenderAppointments() {
+            const tableBody = document.getElementById('appointments-table-body');
+            tableBody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Đang tải...</td></tr>';
+            
+            const searchTerm = document.getElementById('search-appointment').value.toLowerCase();
+            const facilityFilter = document.getElementById('filter-MaCS-app').value;
+            const dateStart = document.getElementById('filter-date-start').value;
+            const dateEnd = document.getElementById('filter-date-end').value;
+
+            // 1. "LỆNH TRIỆU HỒI"
+            let query = supaClient
+                .from('LICH_HEN')
+                .select(`
+                    *,
+                    KHACH_HANG (*),
+                    CO_SO (*),
+                    TT_LICH_HEN (*),
+                    CT_PHIEU_DAT (
+                        *,
+                        DICH_VU (*),
+                        NHAN_VIEN (TenNV)
+                    )
+                `);
+
+            // 2. LỌC PHÍA SERVER (Tốt hơn cho hiệu năng)
+            if (facilityFilter !== 'all') {
+                query = query.eq('MaCS', facilityFilter);
+            }
+            if (dateStart) {
+                // (Giả sử NgayDat lưu cả giờ)
+                query = query.gte('NgayDat', `${dateStart}T00:00:00`); 
+            }
+            if (dateEnd) {
+                query = query.lte('NgayDat', `${dateEnd}T23:59:59`);
+            }
+            // (Lọc tìm kiếm 'searchTerm' phức tạp hơn,
+            // chúng ta sẽ lọc ở client sau khi lấy data)
+
+            // 3. THỰC THI
+            const { data: rawAppointments, error } = await query;
+
+            if (error) {
+                console.error('Lỗi tải lịch hẹn:', error);
+                showToast('Lỗi tải lịch hẹn.', true);
+                tableBody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-red-500">Lỗi tải dữ liệu.</td></tr>';
+                return;
+            }
+
+            // 4. XỬ LÝ VÀ LỌC (CLIENT)
+            // Chạy qua hàm helper để tính toán
+            const joinedAppointments = rawAppointments.map(getJoinedAppointment); 
+            
+            const filteredData = joinedAppointments.filter(app => {
+                // Lọc tìm kiếm (vì KHACH_HANG đã được join)
+                return searchTerm === '' || 
+                       app.TenKH.toLowerCase().includes(searchTerm) || 
+                       app.SDTKH.includes(searchTerm);
+            });
+
+            // 5. RENDER 
+            tableBody.innerHTML = ''; // Xóa 'Đang tải...'
+            if (filteredData.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Không tìm thấy lịch hẹn nào.</td></tr>`;
+            } else {
+                filteredData.forEach(app => {
+                    const tr = document.createElement('tr');
+                    // 'app' bây giờ đã có 'TenKH', 'appTime', v.v.
+                    
+                    // Lấy trạng thái từ object global đã nạp
+                    const status = appointmentStatuses[app.MaTT] || { TrangThai: 'Không rõ', class: 'bg-gray-100 text-gray-800' };
+                    
+                    // Bọc mỗi dịch vụ trong 1 thẻ <div> để ngắt dòng
+                const servicesSummary = app.services.length > 0 
+                ? app.services.map(s => `<div>${s.TenDV}</div>`).join('')
+                : 'N/A';
+            
+                    // Bọc mỗi nhân viên trong 1 thẻ <div> để ngắt dòng
+                const staffSummary = app.services.length > 0 
+                ? app.services.map(s => `<div>${s.TenNV || 'N/A'}</div>`).join('') 
+                : 'N/A';
+                    
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <button onclick="showAppointmentDetails('${app.MaDatLich}')" class="text-sm font-medium text-primary-dark hover:text-primary-medium text-left">
+                                ${app.TenKH}
+                            </button>
+                            <div class="text-sm text-gray-500">${app.appTime} - ${new Date(app.appDate).toLocaleDateString('vi-VN')}</div>
+                            <div class="text-sm text-gray-500">${app.TenCS}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${servicesSummary}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${staffSummary}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <select class="status-dropdown text-xs font-semibold rounded-full border-none focus:ring-0" 
+                                    onchange="updateAppointmentStatus(this, '${app.MaDatLich}', '${app.MaKH}', ${app.totalPrice})">
+                                ${Object.keys(appointmentStatuses).map(key => 
+                                    `<option value="${key}" ${key === app.MaTT ? 'selected' : ''}>${appointmentStatuses[key].TrangThai}</option>`
+                                ).join('')}
+                            </select>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                            <button onclick="openAppointmentModal('${app.MaDatLich}')" class="text-indigo-600 hover:text-indigo-900">Sửa</button>
+                            <button onclick="showDeleteModal('lịch hẹn của ${app.TenKH}', () => deleteAppointment('${app.MaDatLich}'))" class="text-red-600 hover:text-red-900">Xóa</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(tr);
+                    // Áp dụng màu
+                    updateDropdownColor(tr.querySelector('select'));
+                });
+            }
+            
+            // Cập nhật Stats (Hàm này vẫn dùng code cũ)
+            updateAppointmentStats(filteredData);
+        }
+
+        // Cập nhật Stats động
+        function updateAppointmentStats(filteredData) {
+            const pendingUuid = getStatusUuidByName('Chờ xác nhận');
+            const cancelledUuid = getStatusUuidByName('Đã huỷ'); 
+            const noShowUuid = getStatusUuidByName('Không đến');
+
+            const total = filteredData.length;
+    
+            // 2. Sửa logic đếm (count)
+            const pending = filteredData.filter(app => app.MaTT === pendingUuid).length;
+    
+        // 3. Sửa logic tính doanh thu
+        // (Giữ nguyên logic của bạn: tính tất cả TRỪ "Đã huỷ" và "Không đến")
+        const revenue = filteredData.reduce((sum, app) => {
+            // Nếu MaTT không phải là "Huỷ" VÀ không phải là "Không đến"
+            if (app.MaTT !== cancelledUuid && app.MaTT !== noShowUuid) {
+                return sum + (app.totalPrice || 0); // (Thêm || 0 cho an toàn)
+            }
+            return sum;
+        }, 0);
+
+        // 4. Cập nhật HTML
+        document.getElementById('stats-total').textContent = total;
+        document.getElementById('stats-pending').textContent = pending;
+        document.getElementById('stats-revenue').textContent = formatCurrency(revenue);
+        
+        document.getElementById('appointment-table-title').textContent = `Lịch hẹn (${total})`;
+        }
+
+        function getStatusUuidByName(statusName) {
+        // Tìm trong object toàn cục appointmentStatuses
+        const entry = Object.entries(appointmentStatuses).find(
+            ([uuid, statusInfo]) => statusInfo.TrangThai === statusName
+        );
+        // Nếu tìm thấy, trả về key (là UUID), nếu không, trả về null
+        return entry ? entry[0] : null;
+        }
+        
+        async function updateAppointmentStatus(selectElement, maDatLich, maKh, totalPrice) {
+    
+    const newStatusUuid = selectElement.value; // UUID của trạng thái mới
+    
+    updateDropdownColor(selectElement);
+
+    // 1. Cập nhật trạng thái của LICH_HEN
+    const { error: updateError } = await supaClient
+        .from('LICH_HEN')
+        .update({ MaTT: newStatusUuid })
+        .eq('MaDatLich', maDatLich);
+
+    if (updateError) {
+        console.error('Lỗi cập nhật trạng thái:', updateError);
+        showToast(`Lỗi cập nhật: ${updateError.message}`, true);
+        loadAndRenderAppointments();
+        return;
+    }
+
+    showToast('Cập nhật trạng thái thành công!', false);
+
+    // 2. === LOGIC TẠO HÓA ĐƠN MỚI ===
+    const paidStatusUuid = getStatusUuidByName('Đã thanh toán');
+
+    // Nếu trạng thái MỚI là "Đã thanh toán"
+    if (newStatusUuid === paidStatusUuid) {
+        console.log(`Trạng thái là "Đã thanh toán". Đang tạo/cập nhật hóa đơn cho ${maDatLich}...`);
+
+        // (Đây là dòng kiểm tra "lỗi ngầm")
+        if (!maKh || totalPrice === undefined) { 
+            console.error('Lỗi: MaKH hoặc TotalPrice bị thiếu (undefined). Không thể tạo hóa đơn.');
+            showToast('Lỗi: Dữ liệu lịch hẹn bị thiếu MaKH hoặc total.');
+            return;
+        }
+
+        const hoaDonData = {
+            MaDatLich: maDatLich,
+            MaKH: maKh,
+            NgayLap: new Date().toISOString(), 
+            TongTien: totalPrice
+        };
+
+        const { error: invoiceError } = await supaClient
+            .from('HOA_DON')
+            .upsert(hoaDonData, { onConflict: 'MaDatLich' }); 
+
+        if (invoiceError) {
+            console.error('Lỗi tạo hóa đơn:', invoiceError);
+            showToast('Cập nhật trạng thái OK, nhưng lỗi tạo hóa đơn!', true);
+        } else {
+            console.log('Tạo/Cập nhật hóa đơn thành công!');
+        }
+    }
+    
+    // Tải lại toàn bộ danh sách để cập nhật Stats
+    loadAndRenderAppointments();
+}
+
+        async function loadStatusData() {
+    const { data: statuses, error } = await supaClient
+        .from('TT_LICH_HEN') 
+        .select('MaTT, TrangThai'); // Lấy UUID và Tên
+
+    if (error) {
+        console.error('LỖI: Không tải được danh sách trạng thái:', error);
+        return;
+    }
+    appointmentStatuses = {};
+    // Lặp qua kết quả từ DB
+    statuses.forEach(status => {
+        const uuid = status.MaTT;
+        const name = status.TrangThai;
+        // Lấy lớp CSS từ "bản đồ" 
+        const cssClass = statusColorMap[name] || 'bg-gray-100 text-gray-800'; 
+
+        // Nạp vào object toàn cục
+        // Key là UUID, value là object chứa Tên và Class
+        appointmentStatuses[uuid] = {
+            TrangThai: name,
+            class: cssClass,
+            count: 0 // Khởi tạo count = 0 (cho hàm báo cáo)
+        };
+    });
+
+    console.log('Đã nạp xong dữ liệu trạng thái:', appointmentStatuses);
+}
+        
+        function updateDropdownColor(selectElement) {
+            Object.keys(appointmentStatuses).forEach(key => {
+                selectElement.classList.remove(...appointmentStatuses[key].class.split(' '));
+            });
+            const status = appointmentStatuses[selectElement.value];
+            if (status) {
+                selectElement.classList.add(...status.class.split(' '));
+            }
+        }
+        
+        async function deleteAppointment(maDatLich) {
+            
+            // **LƯU Ý QUAN TRỌNG VỀ CSDL:**
+            // Do ràng buộc khóa ngoại, bạn phải xóa
+            // các dòng trong CT_PHIEU_DAT (và HOA_DON, DANH_GIA)
+            // trước khi xóa LICH_HEN.
+            
+            // Cách 1: Xóa thủ công (an toàn)
+            // (Nếu bạn có Bảng HOA_DON, cũng phải xóa nó trước)
+            const { error: ctError } = await supaClient
+                .from('CT_PHIEU_DAT')
+                .delete()
+                .eq('MaDatLich', maDatLich);
+
+            if (ctError) {
+                console.error('Lỗi xóa chi tiết:', ctError);
+                showToast(`Lỗi: ${ctError.message}`, true);
+                return;
+            }
+
+            // Cách 2: Bạn nên thiết lập "ON DELETE CASCADE"
+            // trong CSDL (Supabase) cho các khóa ngoại
+            // trỏ đến LICH_HEN. Nếu làm vậy, bạn chỉ cần code ở dưới.
+
+            // Sau khi xóa các bảng con, xóa bảng cha
+            const { error } = await supaClient
+                .from('LICH_HEN')
+                .delete()
+                .eq('MaDatLich', maDatLich);
+
+            if (error) {
+                console.error('Lỗi xóa lịch hẹn:', error);
+                showToast(`Lỗi: ${error.message}`, true);
+            } else {
+                showToast('Đã xóa lịch hẹn thành công.');
+                loadAndRenderAppointments(); // Tải lại bảng
+            }
+        }
+
+        function filterToday() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('filter-date-start').value = today;
+            document.getElementById('filter-date-end').value = today;
+            loadAndRenderAppointments();
+        }
+
+        function resetDateFilter() {
+            document.getElementById('filter-date-start').value = '';
+            document.getElementById('filter-date-end').value = '';
+            loadAndRenderAppointments();
+        }
+        
+        async function openAppointmentModal(maDatLich) {
+            const modal = document.getElementById('appointment-modal');
+            const title = document.getElementById('appointment-modal-title');
+            const form = document.getElementById('appointment-form');
+            form.reset();
+            
+            // (Dropdown trạng thái đã được nạp bởi loadAndPopulateSelectors)
+            
+            // Lấy dữ liệu JOIN y hệt như hàm loadAndRenderAppointments
+            const { data: app, error } = await supaClient
+                .from('LICH_HEN')
+                .select(`
+                    *,
+                    KHACH_HANG (TenKH, SDTKH)
+                `)
+                .eq('MaDatLich', maDatLich)
+                .single(); // Chỉ lấy 1
+
+            if (error || !app) {
+                console.error('Lỗi lấy chi tiết lịch hẹn:', error);
+                showToast('Không tìm thấy lịch hẹn.', true);
+                return;
+            }
+            
+            const date = new Date(app.NgayDat);
+            const appDate = date.toISOString().split('T')[0];
+            const appTime = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }).slice(0, 5);
+
+            title.textContent = "Sửa lịch hẹn";
+            document.getElementById('MaDatLich_edit').value = app.MaDatLich;
+            document.getElementById('app-TenKH').value = app.KHACH_HANG.TenKH;
+            document.getElementById('app-SDTKH').value = app.KHACH_HANG.SDTKH;
+            document.getElementById('app-NgayDat').value = appDate;
+            document.getElementById('app-ThoiGian').value = appTime;
+            
+            const statusSelect = document.getElementById('app-MaTT');
+            statusSelect.value = app.MaTT;
+            updateDropdownColor(statusSelect); // Thêm màu cho modal
+            
+            openAdminModal('appointment-modal');
+        }
+
+        async function handleAppointmentFormSubmit(event) {
+            event.preventDefault();
+            
+            const phone = document.getElementById('app-SDTKH').value;
+            if (!validatePhone(phone)) {
+                showToast('Số điện thoại phải có 10 chữ số.', true);
+                return;
+            }
+            
+            const maDatLich = document.getElementById('MaDatLich_edit').value;
+            const ngay = document.getElementById('app-NgayDat').value;
+            const gio = document.getElementById('app-ThoiGian').value;
+            
+            // Dữ liệu cập nhật cho LICH_HEN
+            const appData = {
+                "MaTT": document.getElementById('app-MaTT').value,
+                "NgayDat": `${ngay}T${gio}:00` // Lưu lại dạng ISO 8601
+            };
+
+            // 1. Cập nhật LICH_HEN
+            const { error: appError } = await supaClient
+                .from('LICH_HEN')
+                .update(appData)
+                .eq('MaDatLich', maDatLich);
+
+            if (appError) {
+                console.error('Lỗi cập nhật lịch hẹn:', appError);
+                showToast(`Lỗi: ${appError.message}`, true);
+                return;
+            }
+            
+            // (Code này giả định rằng modal này cũng cập nhật
+            // cả KHACH_HANG)
+            const tenKH = document.getElementById('app-TenKH').value;
+            
+            // 2. Tìm MaKH từ MaDatLich (cần thiết để update KHACH_HANG)
+            const { data: lichHen } = await supaClient.from('LICH_HEN').select('MaKH').eq('MaDatLich', maDatLich).single();
+            
+            if (lichHen && lichHen.MaKH) {
+                 // 3. Cập nhật KHACH_HANG
+                 const { error: custError } = await supaClient
+                    .from('KHACH_HANG')
+                    .update({ "TenKH": tenKH, "SDTKH": phone })
+                    .eq('MaKH', lichHen.MaKH);
+                
+                if (custError) {
+                     console.error('Lỗi cập nhật khách hàng:', custError);
+                     showToast('Cập nhật lịch hẹn thành công, nhưng lỗi cập nhật KH.', true);
+                }
+            }
+
+            showToast('Cập nhật lịch hẹn thành công.');
+            closeAdminModal('appointment-modal');
+            loadAndRenderAppointments(); // Tải lại toàn bộ
+        }
+
+        async function showAppointmentDetails(maDatLich) {
+            // 1. Lấy dữ liệu JOIN y hệt như hàm loadAndRenderAppointments
+            const { data: app, error } = await supaClient
+                .from('LICH_HEN')
+                .select(`
+                    *,
+                    KHACH_HANG (TenKH, SDTKH),
+                    CO_SO (TenCS),
+                    TT_LICH_HEN (*),
+                    CT_PHIEU_DAT (
+                        DICH_VU (*),
+                        NHAN_VIEN (TenNV)
+                    )
+                `)
+                .eq('MaDatLich', maDatLich)
+                .single();
+
+            if (error || !app) {
+                console.error('Lỗi tải chi tiết:', error);
+                showToast('Không tìm thấy lịch hẹn.', true);
+                return;
+            }
+
+            // 2. Dùng hàm helper cũ để tính toán
+            const joinedApp = getJoinedAppointment(app);
+            const status = appointmentStatuses[joinedApp.MaTT] || { TrangThai: 'N/A', class: '' };
+
+            // 3. Nạp dữ liệu vào modal (Code cũ của bạn)
+            document.getElementById('details-TenKH').textContent = joinedApp.TenKH;
+            document.getElementById('details-SDTKH').textContent = joinedApp.SDTKH;
+            document.getElementById('details-TenCS').textContent = joinedApp.TenCS;
+            document.getElementById('details-ThoiGian').textContent = `${joinedApp.appTime} - ${new Date(joinedApp.appDate).toLocaleDateString('vi-VN')}`;
+            document.getElementById('details-GhiChu').textContent = joinedApp.GhiChu || '(Không có ghi chú)';
+
+            const statusEl = document.getElementById('details-TrangThai');
+            statusEl.textContent = status.TrangThai;
+            statusEl.className = `font-medium px-2 py-0.5 rounded-full ${status.class}`;
+
+            const serviceListEl = document.getElementById('details-service-list');
+            serviceListEl.innerHTML = '';
+            if (joinedApp.services && joinedApp.services.length > 0) {
+                joinedApp.services.forEach(s => {
+                    const li = document.createElement('li');
+                    li.textContent = `${s.TenDV} (${formatCurrency(s.DonGiaDV)}) - NV: ${s.TenNV}`;
+                    serviceListEl.appendChild(li);
+                });
+            } else {
+                serviceListEl.innerHTML = '<li>Không có dịch vụ.</li>';
+            }
+
+            document.getElementById('details-total-duration').textContent = `${joinedApp.totalDuration} phút`;
+            document.getElementById('details-total-price').textContent = formatCurrency(joinedApp.totalPrice);
+            
+            // Tính toán 80% (từ dữ liệu thật)
+            const totalDeposit = joinedApp.TienCoc || 0;
+            const remainingPayment = joinedApp.totalPrice - totalDeposit; 
+            
+            document.getElementById('details-remaining-payment').textContent = formatCurrency(remainingPayment);
+
+            openAdminModal('appointment-details-modal');
+        }
+
+        // --- TAB 2: QUẢN LÝ KHÁCH HÀNG ---
+        
+        async function loadAndRenderCustomers() {
+            const tableBody = document.getElementById('customers-table-body');
+            const searchTerm = document.getElementById('search-customer').value.toLowerCase();
+
+            // 1. Gọi Supabase, lấy dữ liệu từ VIEW
+            let query = supaClient
+                .from('v_khach_hang_details') // <-- Lấy từ View
+                .select('*');
+
+            // 2. Thêm bộ lọc tìm kiếm (nếu có)
+            if (searchTerm) {
+                // Dùng .or() để tìm theo Tên HOẶC SĐT
+                query = query.or(`TenKH.ilike.%${searchTerm}%,SDTKH.ilike.%${searchTerm}%`);
+            }
+            
+            // 3. Thực thi query
+            const { data: customers, error } = await query;
+console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
+            if (error) {
+                console.error('Lỗi tải khách hàng:', error);
+                showToast('Lỗi tải khách hàng.', true);
+                return;
+            }
+
+            // 4. Các hàm render và filter 
+            tableBody.innerHTML = '';
+
+            // 5. Sắp xếp (Sort)
+            customers.sort((a, b) => {
+                return customerSortOrder === 'desc' 
+                    ? b.totalSpending - a.totalSpending 
+                    : a.totalSpending - b.totalSpending;
+            });
+
+            // 6. Render
+            if (customers.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">Không tìm thấy khách hàng.</td></tr>`;
+            } else {
+                customers.forEach(cust => {
+                    const tr = document.createElement('tr');
+                    // Code render HTML của bạn vẫn giữ nguyên vì 'cust' 
+                    // đã có 'totalSpending' nhờ View.
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${cust.TenKH}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${cust.SDTKH}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${formatCurrency(cust.totalSpending)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                            <button onclick="openCustomerModal('${cust.MaKH}')" class="text-indigo-600 hover:text-indigo-900">Sửa</button>
+                            <button onclick="showDeleteModal('khách hàng ${cust.TenKH}', () => deleteCustomer('${cust.MaKH}'))" class="text-red-600 hover:text-red-900">Xóa</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+            }
+        }
+        
+        function sortCustomersBySpending() {
+            customerSortOrder = (customerSortOrder === 'desc') ? 'asc' : 'desc';
+            // Không render nữa, chỉ cần load lại
+            loadAndRenderCustomers(); 
+            showToast(`Sắp xếp ${customerSortOrder === 'desc' ? 'giảm dần' : 'tăng dần'}.`);
+        }
+
+        async function openCustomerModal(maKH) {
+            const modal = document.getElementById('customer-modal');
+            const title = document.getElementById('customer-modal-title');
+            const form = document.getElementById('customer-form');
+            form.reset();
+            
+            if (maKH) {
+                title.textContent = "Sửa thông tin khách hàng";
+                
+                // Lấy dữ liệu mới nhất
+                const { data: customer, error } = await supaClient
+                    .from('KHACH_HANG') // Lấy từ bảng gốc
+                    .select('*')
+                    .eq('MaKH', maKH)
+                    .single(); // Chỉ lấy 1
+                    
+                if (customer) {
+                    document.getElementById('MaKH').value = customer.MaKH;
+                    document.getElementById('TenKH').value = customer.TenKH;
+                    document.getElementById('SDTKH').value = customer.SDTKH;
+                }
+            } else {
+                title.textContent = "Thêm khách hàng mới";
+                document.getElementById('MaKH').value = '';
+            }
+            openAdminModal('customer-modal');
+        }
+
+        async function handleCustomerFormSubmit(event) {
+            event.preventDefault();
+            
+            const phone = document.getElementById('SDTKH').value;
+            if (!validatePhone(phone)) {
+                showToast('Số điện thoại phải có 10 chữ số.', true);
+                return;
+            }
+            
+            const maKH = document.getElementById('MaKH').value;
+            const tenKH = document.getElementById('TenKH').value;
+            
+            let query;
+            let successMessage = '';
+            
+            const customerData = {
+                TenKH: tenKH,
+                SDTKH: phone
+            };
+
+            if (maKH) {
+                // CẬP NHẬT (Update) vào bảng GỐC
+                query = supaClient
+                    .from('KHACH_HANG') // <-- Bảng gốc
+                    .update(customerData)
+                    .eq('MaKH', maKH);
+                successMessage = 'Cập nhật khách hàng thành công.';
+            } else {
+                // THÊM MỚI (Insert) vào bảng GỐC
+                query = supaClient
+                    .from('KHACH_HANG') // <-- Bảng gốc
+                    .insert(customerData);
+                successMessage = 'Thêm khách hàng thành công.';
+            }
+            
+            const { error } = await query;
+
+            if (error) {
+                console.error('Lỗi lưu khách hàng:', error);
+                showToast(`Lỗi: ${error.message}`, true);
+            } else {
+                showToast(successMessage);
+                closeAdminModal('customer-modal');
+                // TẢI LẠI DỮ LIỆU TỪ VIEW ĐỂ CẬP NHẬT GIAO DIỆN
+                loadAndRenderCustomers(); 
+            }
+        }
+        
+        async function deleteCustomer(maKH) {
+            // Gọi Supabase để XÓA từ bảng GỐC
+            const { error } = await supaClient
+                .from('KHACH_HANG') // <-- Bảng gốc
+                .delete()
+                .eq('MaKH', maKH);
+                
+            if (error) {
+                console.error('Lỗi xóa khách hàng:', error);
+                // (Bạn có thể cần kiểm tra lỗi "foreign key" ở đây)
+                showToast(`Lỗi: ${error.message}`, true);
+            } else {
+                showToast('Đã xóa khách hàng.');
+                // TẢI LẠI DỮ LIỆU TỪ VIEW
+                loadAndRenderCustomers();
+            }
+        }
+
+        // --- TAB 3: QUẢN LÝ NHÂN VIÊN ---
+        
+        async function loadAndRenderStaff() {
+            const tableBody = document.getElementById('staff-table-body');
+            tableBody.innerHTML = '';
+            
+            const searchTerm = document.getElementById('search-staff').value.toLowerCase();
+            const expertiseFilter = document.getElementById('filter-staff-MaNhomDV').value;
+            const facilityFilter = document.getElementById('filter-staff-MaCS').value;
+
+            // 1. Lệnh JOIN: Lấy NHAN_VIEN và liên kết
+            // với NHOM_DV và CO_SO
+            let query = supaClient
+                .from('NHAN_VIEN')
+                .select(`
+                    *,
+                    NHOM_DV (*),
+                    CO_SO (*)
+                `);
+
+            // 2. Thêm bộ lọc (Server-side)
+            if (searchTerm) {
+                query = query.or(`"TenNV".ilike.%${searchTerm}%, "SDTNV".ilike.%${searchTerm}%`);
+            }
+            if (expertiseFilter !== 'all') {
+                query = query.eq('MaNhomDV', expertiseFilter);
+            }
+            if (facilityFilter !== 'all') {
+                query = query.eq('MaCS', facilityFilter);
+            }
+
+            // 3. Thực thi query
+            const { data: staffList, error } = await query;
+
+            if (error) {
+                console.error('Lỗi tải nhân viên:', error);
+                showToast('Lỗi tải danh sách nhân viên.', true);
+                return;
+            }
+
+            // 4. Render
+            if (staffList.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Không tìm thấy nhân viên.</td></tr>`;
+            } else {
+                staffList.forEach(staff => {
+                    // Lấy tên từ object con (kết quả của JOIN)
+                    const expertiseName = staff.NHOM_DV ? staff.NHOM_DV.NhomDV : 'N/A';
+                    const facilityName = staff.CO_SO ? staff.CO_SO.TenCS : 'N/A';
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <button onclick="showEmployeeSchedule('${staff.MaNV}', '${staff.TenNV}')" 
+                                    class="text-sm font-medium text-gray-900 hover:text-primary-dark text-left focus:outline-none transition-colors duration-200">
+                                ${staff.TenNV}
+                            </button>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${staff.SDTNV}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${expertiseName}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${facilityName}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                            <button onclick="openStaffModal('${staff.MaNV}')" class="text-indigo-600 hover:text-indigo-900">Sửa</button>
+                            <button onclick="showDeleteModal('nhân viên ${staff.TenNV}', () => deleteStaff('${staff.MaNV}'))" class="text-red-600 hover:text-red-900">Xóa</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+            }
+        }
+
+        async function showEmployeeSchedule(maNV, tenNV) {
+            // 1. Cập nhật tiêu đề Modal
+            document.getElementById('emp-schedule-title').textContent = `Lịch sắp tới của: ${tenNV}`;
+            const listEl = document.getElementById('emp-schedule-list');
+            const emptyEl = document.getElementById('emp-schedule-empty');
+            
+            // Hiển thị trạng thái đang tải
+            listEl.innerHTML = '<li class="text-center text-gray-500 py-4">Đang tải dữ liệu...</li>';
+            emptyEl.classList.add('hidden');
+            openAdminModal('employee-schedule-modal'); // Mở Modal ngay
+
+            // 2. Lấy thời gian hiện tại (để lọc quá khứ)
+            const now = new Date().toISOString();
+
+            // 3. Query Supabase
+            // Logic: Vào bảng Chi tiết phiếu đặt (nơi gán NV) -> Join lên Lịch Hẹn -> Lọc ngày >= Now
+            const { data: schedules, error } = await supaClient
+                .from('CT_PHIEU_DAT')
+                .select(`
+                    MaDV,
+                    DICH_VU ( TenDV ),
+                    LICH_HEN!inner (
+                        NgayDat,
+                        KHACH_HANG ( TenKH, SDTKH ),
+                        CO_SO ( TenCS )
+                    )
+                `)
+                .eq('MaNV', maNV) // Lọc theo nhân viên này
+                .gte('LICH_HEN.NgayDat', now) // Lọc ngày >= hiện tại
+                .order('NgayDat', { foreignTable: 'LICH_HEN', ascending: true }); // Sắp xếp ngày tăng dần
+
+            // 4. Render dữ liệu
+            listEl.innerHTML = ''; // Xóa 'Đang tải...'
+
+            if (error) {
+                console.error('Lỗi tải lịch nhân viên:', error);
+                listEl.innerHTML = '<li class="text-center text-red-500">Lỗi tải dữ liệu. Vui lòng thử lại.</li>';
+                return;
+            }
+
+            if (!schedules || schedules.length === 0) {
+                emptyEl.classList.remove('hidden'); // Hiện thông báo trống
+            } else {
+                schedules.forEach(item => {
+                    // item.LICH_HEN là object chứa thông tin lịch
+                    const booking = item.LICH_HEN;
+                    const serviceName = item.DICH_VU?.TenDV || 'Dịch vụ đã xóa';
+                    const customerName = booking.KHACH_HANG?.TenKH || 'Khách vãng lai';
+                    
+                    // Format ngày giờ
+                    const dateObj = new Date(booking.NgayDat);
+                    const dateStr = dateObj.toLocaleDateString('vi-VN');
+                    const timeStr = dateObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+                    const li = document.createElement('li');
+                    li.className = 'bg-white p-3 rounded-md shadow-sm border border-gray-200 hover:border-primary transition-colors';
+                    li.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-semibold text-gray-800">${serviceName}</p>
+                                <p class="text-sm text-gray-600">Khách hàng: <span class="font-medium">${customerName}</span></p>
+                                <p class="text-xs text-gray-500 mt-1">${booking.CO_SO?.TenCS}</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-lg font-bold text-primary-dark">${timeStr}</div>
+                                <div class="text-xs text-gray-500">${dateStr}</div>
+                            </div>
+                        </div>
+                    `;
+                    listEl.appendChild(li);
+                });
+            }
+        }
+        
+        async function openStaffModal(maNV) {
+            const modal = document.getElementById('staff-modal');
+            const title = document.getElementById('staff-modal-title');
+            const form = document.getElementById('staff-form');
+            form.reset();
+            
+            // (Các dropdown đã được nạp bởi loadAndPopulateSelectors)
+            
+            if (maNV) {
+                title.textContent = "Sửa thông tin nhân viên";
+                // Lấy data GỐC
+                const { data: staff, error } = await supaClient
+                    .from('NHAN_VIEN')
+                    .select('*')
+                    .eq('MaNV', maNV)
+                    .single();
+
+                if (staff) {
+                    document.getElementById('MaNV').value = staff.MaNV;
+                    document.getElementById('TenNV').value = staff.TenNV;
+                    document.getElementById('SDTNV').value = staff.SDTNV;
+                    document.getElementById('staff-MaNhomDV').value = staff.MaNhomDV;
+                    document.getElementById('staff-MaCS').value = staff.MaCS;
+                }
+            } else {
+                title.textContent = "Thêm nhân viên mới";
+                document.getElementById('MaNV').value = '';
+            }
+            openAdminModal('staff-modal');
+        }
+
+        async function handleStaffFormSubmit(event) {
+            event.preventDefault();
+            
+            const phone = document.getElementById('SDTNV').value;
+            if (!validatePhone(phone)) {
+                showToast('Số điện thoại phải có 10 chữ số.', true);
+                return;
+            }
+            
+            const maNV = document.getElementById('MaNV').value;
+            
+            // Dữ liệu phải khớp CSDL
+            const staffData = {
+                "TenNV": document.getElementById('TenNV').value,
+                "SDTNV": phone,
+                "MaNhomDV": document.getElementById('staff-MaNhomDV').value,
+                "MaCS": document.getElementById('staff-MaCS').value
+            };
+            
+            let query;
+            let successMessage;
+
+            if (maNV) {
+                // UPDATE
+                query = supaClient.from('NHAN_VIEN').update(staffData).eq('MaNV', maNV);
+                successMessage = 'Cập nhật nhân viên thành công.';
+            } else {
+                // INSERT
+                query = supaClient.from('NHAN_VIEN').insert(staffData);
+                successMessage = 'Thêm nhân viên thành công.';
+            }
+
+            const { error } = await query;
+            
+            if (error) {
+                console.error('Lỗi lưu nhân viên:', error);
+                showToast(`Lỗi: ${error.message}`, true);
+            } else {
+                showToast(successMessage);
+                closeAdminModal('staff-modal');
+                loadAndRenderStaff(); // Tải lại bảng
+            }
+        }
+        async function deleteStaff(maNV) {
+            const { error } = await supaClient
+                .from('NHAN_VIEN')
+                .delete()
+                .eq('MaNV', maNV);
+                
+            if (error) {
+                console.error('Lỗi xóa nhân viên:', error);
+                showToast(`Lỗi: ${error.message}`, true);
+            } else {
+                showToast('Đã xóa nhân viên.');
+                loadAndRenderStaff(); // Tải lại bảng
+            }
+        }
+
+
+        // --- TAB 4: QUẢN LÝ DỊCH VỤ ---
+        
+      // HÀM MỚI (ASYNC) THAY THẾ renderServicesTable()
+        async function loadAndRenderServices() {
+            const tableBody = document.getElementById('services-table-body');
+            tableBody.innerHTML = '';
+            const searchTerm = document.getElementById('search-service').value.toLowerCase();
+
+            // 1. Lệnh JOIN: Lấy DICH_VU và liên kết
+            // với NHOM_DV (để lấy NhomDV)
+            let query = supaClient
+                .from('DICH_VU')
+                .select(`
+                    *,
+                    NHOM_DV (NhomDV) 
+                `); // Chỉ lấy cột NhomDV từ bảng NHOM_DV
+
+            // 2. Thực thi query
+            const { data: services, error } = await query;
+
+            if (error) {
+                console.error('Lỗi tải dịch vụ:', error);
+                showToast('Lỗi tải danh sách dịch vụ.', true);
+                return;
+            }
+
+            // 3. Lọc (Client-side) vì cần tìm cả Tên nhóm
+            const filteredData = services.filter(service => {
+                const groupName = service.NHOM_DV ? service.NHOM_DV.NhomDV : '';
+                return service.TenDV.toLowerCase().includes(searchTerm) ||
+                       groupName.toLowerCase().includes(searchTerm);
+            });
+
+            // 4. Render
+            if (filteredData.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Không tìm thấy dịch vụ.</td></tr>`;
+            } else {
+                filteredData.forEach(s => {
+                    const groupName = s.NHOM_DV ? s.NHOM_DV.NhomDV : 'N/A';
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            ${s.TenDV}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${groupName}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${s.ThoiLuong}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${formatCurrency(s.DonGiaDV)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                            <button onclick="openServiceModal('${s.MaDV}')" class="text-indigo-600 hover:text-indigo-900">Sửa</button>
+                            <button onclick="showDeleteModal('dịch vụ ${s.TenDV}', () => deleteService('${s.MaDV}'))" class="text-red-600 hover:text-red-900">Xóa</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+            }
+        }
+        
+        async function openServiceModal(maDV) {
+            const modal = document.getElementById('service-modal');
+            const title = document.getElementById('service-modal-title');
+            const form = document.getElementById('service-form');
+            form.reset();
+            
+            // (Dropdown đã được populate ở hàm populateInitialSelectors)
+            
+            if (maDV) {
+                title.textContent = "Sửa dịch vụ";
+                // Lấy data GỐC
+                const { data: service, error } = await supaClient
+                    .from('DICH_VU')
+                    .select('*')
+                    .eq('MaDV', maDV)
+                    .single();
+
+                if (service) {
+                    document.getElementById('MaDV').value = service.MaDV;
+                    document.getElementById('TenDV').value = service.TenDV;
+                    document.getElementById('service-MaNhomDV').value = service.MaNhomDV;
+                    document.getElementById('ThoiLuong').value = service.ThoiLuong;
+                    document.getElementById('DonGiaDV').value = service.DonGiaDV;
+                    document.getElementById('MoTaDV').value = service.MoTaDV || '';
+                }
+            } else {
+                title.textContent = "Thêm dịch vụ mới";
+                document.getElementById('MaDV').value = '';
+            }
+            openAdminModal('service-modal');
+        }
+
+        async function handleServiceFormSubmit(event) {
+            event.preventDefault();
+            const maDV = document.getElementById('MaDV').value;
+            
+            // Dữ liệu phải khớp CSDL
+            const serviceData = {
+                "TenDV": document.getElementById('TenDV').value,
+                "MaNhomDV": document.getElementById('service-MaNhomDV').value,
+                "ThoiLuong": parseInt(document.getElementById('ThoiLuong').value),
+                "DonGiaDV": parseInt(document.getElementById('DonGiaDV').value),
+                "MoTaDV": document.getElementById('MoTaDV').value
+            };
+
+            let query;
+            let successMessage;
+
+            if (maDV) {
+                // UPDATE
+                query = supaClient.from('DICH_VU').update(serviceData).eq('MaDV', maDV);
+                successMessage = 'Cập nhật dịch vụ thành công.';
+            } else {
+                // INSERT
+                query = supaClient.from('DICH_VU').insert(serviceData);
+                successMessage = 'Thêm dịch vụ thành công.';
+            }
+
+            const { error } = await query;
+            
+            if (error) {
+                console.error('Lỗi lưu dịch vụ:', error);
+                showToast(`Lỗi: ${error.message}`, true);
+            } else {
+                showToast(successMessage);
+                closeAdminModal('service-modal');
+                loadAndRenderServices(); // Tải lại bảng
+            }
+        }
+        
+        async function deleteService(maDV) {
+            const { error } = await supaClient
+                .from('DICH_VU')
+                .delete()
+                .eq('MaDV', maDV);
+                
+            if (error) {
+                console.error('Lỗi xóa dịch vụ:', error);
+                showToast(`Lỗi: ${error.message}`, true);
+            } else {
+                showToast('Đã xóa dịch vụ.');
+                loadAndRenderServices(); // Tải lại bảng
+            }
+        }
+
+        // Modal Quản lý Nhóm Dịch vụ (NHOM_DV)
+        async function openServiceGroupModal() {
+            // Tải danh sách nhóm mới nhất khi mở modal
+            await renderServiceGroupList(); 
+            openAdminModal('service-group-modal');
+        }
+        
+        async function renderServiceGroupList() {
+            const list = document.getElementById('service-group-list');
+            list.innerHTML = '<li class="px-4 py-2 text-gray-500">Đang tải...</li>';
+            
+            const { data: groups, error } = await supaClient
+                .from('NHOM_DV')
+                .select('*');
+
+            if (error) {
+                list.innerHTML = '<li class="px-4 py-2 text-red-500">Lỗi tải danh sách.</li>';
+                return;
+            }
+
+            list.innerHTML = '';
+            if (groups.length === 0) {
+                list.innerHTML = '<li class="px-4 py-2 text-gray-500">Chưa có nhóm nào.</li>';
+            } else {
+                groups.forEach(group => {
+                    list.innerHTML += `<li class="px-4 py-2">
+                        <span>${group.NhomDV}</span>
+                    </li>`;
+                });
+            }
+        }
+
+        async function handleAddServiceGroup(event) {
+            event.preventDefault();
+            const inputName = document.getElementById('NhomDV_new');
+            
+            const newName = inputName.value.trim();
+            
+            // 1. Chỉ kiểm tra Tên nhóm
+            if (!newName) {
+                showToast('Vui lòng nhập Tên nhóm mới.', true);
+                return;
+            }
+            
+            // 2. Chỉ insert Tên nhóm (NhomDV)
+            const { error } = await supaClient
+                .from('NHOM_DV')
+                .insert({ "NhomDV": newName }); // (Supabase sẽ tự sinh MaNhomDV)
+
+            if (error) {
+                console.error('Lỗi thêm nhóm DV:', error);
+                showToast(`Lỗi: ${error.message}`, true);
+            } else {
+                showToast('Đã thêm nhóm dịch vụ.');
+                inputName.value = '';
+                // Tải lại danh sách trong modal
+                renderServiceGroupList(); 
+                // Tải lại tất cả dropdowns trong trang
+                loadAndPopulateSelectors(); 
+            }
+        }
+        
+        // --- TAB 5: BÁO CÁO ---
+        let lastGeneralReportData = [];
+        let lastStatusReportData = [];
+        let lastVipReportData = [];
+        
+        function exportToCSV(data, filename, title) {
+    if (!data || data.length === 0) {
+        showToast('Không có dữ liệu để xuất.', true);
+        return;
+    }
+
+    // 1. Lấy tiêu đề cột (headers) từ object đầu tiên
+    const headers = Object.keys(data[0]);
+    
+    // 2. Tạo nội dung CSV
+    const csvHeader = headers.join(',');
+    const csvRows = data.map(row => {
+        return headers.map(header => {
+            let cell = String(row[header] === null || row[header] === undefined ? '' : row[header]);
+            cell = cell.includes(',') ? `"${cell.replace(/"/g, '""')}"` : cell;
+            return cell;
+        }).join(',');
+    });
+
+    // 3. === GỘP TIÊU ĐỀ BÁO CÁO VÀ DỮ LIỆU ===
+    const contentArray = [];
+
+    if (title) {
+        contentArray.push(`"${title.replace(/"/g, '""')}"`);
+        contentArray.push(""); 
+    }
+
+    contentArray.push(csvHeader);
+    contentArray.push(...csvRows);
+
+    const csvContent = contentArray.join('\n');
+    
+    // 4. Tạo file và Tải về
+    const bom = '\uFEFF'; // BOM cho tiếng Việt
+    const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
+
+    const link = document.createElement("a");
+    if (link.download !== undefined) { 
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+}
+        async function generateReport() {
+            const dateStart = document.getElementById('report-date-start').value;
+            const dateEnd = document.getElementById('report-date-end').value;
+            const type = document.getElementById('report-type').value; // 'revenue' or 'count'
+            const groupBy = document.getElementById('report-group-by').value; // 'DICH_VU', 'KHACH_HANG'...
+            
+            if (!dateStart || !dateEnd) {
+                showToast('Vui lòng chọn cả ngày bắt đầu và kết thúc.', true);
+                return;
+            }
+
+            // 1. Gọi hàm RPC
+            const { data: reportData, error } = await supaClient.rpc('get_general_report', {
+                p_start_date: `${dateStart}T00:00:00`,
+                p_end_date: `${dateEnd}T23:59:59`,
+                p_report_type: type,
+                p_group_by: groupBy
+            });
+            
+            if (error) {
+                console.error('Lỗi báo cáo chung:', error);
+                showToast(`Lỗi: ${error.message}`, true);
+                lastGeneralReportData = [];
+                return;
+            }
+            lastGeneralReportData = reportData || [];
+
+            // 2. Tự động tạo tiêu đề bảng
+            const dateStartText = new Date(dateStart).toLocaleDateString('vi-VN');
+            const dateEndText = new Date(dateEnd).toLocaleDateString('vi-VN');
+            let dateTitle = ` (Từ ${dateStartText} đến ${dateEndText})`;
+
+            let t_title = '';
+            let valueHeader = (type === 'revenue') ? 'Doanh thu' : 'Số lượng';
+            
+            switch (groupBy) {
+                case 'KHACH_HANG': t_title = 'Khách hàng'; break;
+                case 'NHAN_VIEN': t_title = 'Nhân viên'; break;
+                case 'DICH_VU': t_title = 'Dịch vụ'; break;
+                case 'NHOM_DV': t_title = 'Nhóm dịch vụ'; break;
+            }
+            const title = `Báo cáo ${valueHeader} theo ${t_title}${dateTitle}`;
+            document.getElementById('report-title').textContent = title;
+            
+            const head = document.getElementById('report-table-head');
+            const body = document.getElementById('report-table-body');
+            head.innerHTML = '';
+            body.innerHTML = '';
+
+            let headers = [];
+            const valueColumn = type === 'revenue' ? 'Tổng Doanh thu' : 'Số lượng';
+
+            // 3. Tùy chỉnh cột dựa trên nhóm
+            if (groupBy === 'KHACH_HANG') {
+                headers = ['Tên Khách hàng', 'Số điện thoại', valueColumn];
+            } else if (groupBy === 'DICH_VU') {
+                headers = ['Tên Dịch vụ', 'Thuộc Nhóm', valueColumn];
+            } else if (groupBy === 'NHAN_VIEN') {
+                headers = ['Tên Nhân viên', 'Chuyên môn', valueColumn];
+            } else { // NHOM_DV
+                 headers = ['Nhóm dịch vụ', valueColumn];
+            }
+            
+            // 4. Render tiêu đề
+            head.innerHTML = `<tr>${headers.map(h => `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${h}</th>`).join('')}</tr>`;
+            
+            // 5. Render nội dung
+            if (reportData.length === 0) {
+                 body.innerHTML = `<tr><td colspan="${headers.length}" class="px-6 py-4 text-center text-gray-500">Không có dữ liệu.</td></tr>`;
+                 return;
+            }
+            
+            reportData.forEach(row => {
+                let cells = '';
+                const value = (type === 'revenue') ? formatCurrency(row.report_value) : row.report_value;
+
+                if (groupBy === 'KHACH_HANG') {
+                    cells = `
+                        <td class="px-6 py-4 text-sm text-gray-700">${row.group_name}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${row.group_detail}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700 font-medium">${value}</td>`;
+                } else if (groupBy === 'DICH_VU') {
+                    cells = `
+                        <td class="px-6 py-4 text-sm text-gray-700">${row.group_name}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${row.group_detail}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700 font-medium">${value}</td>`;
+                } else if (groupBy === 'NHAN_VIEN') {
+                     cells = `
+                        <td class="px-6 py-4 text-sm text-gray-700">${row.group_name}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${row.group_detail || 'N/A'}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700 font-medium">${value}</td>`;
+                } else { // NHOM_DV
+                     cells = `
+                        <td class="px-6 py-4 text-sm text-gray-700">${row.group_name}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700 font-medium">${value}</td>`;
+                }
+                body.innerHTML += `<tr>${cells}</tr>`;
+            });
+
+            document.getElementById('report-results-container').classList.remove('hidden');
+            
+        }
+
+        function exportGeneralReport() {
+    if (lastGeneralReportData.length === 0) {
+        showToast('Vui lòng chạy báo cáo trước khi xuất.', true);
+        return;
+    }
+    
+    // 1. Lấy cài đặt hiện tại
+    const type = document.getElementById('report-type').value;
+    const groupBy = document.getElementById('report-group-by').value;
+    const filename = `bao_cao_${type}_theo_${groupBy}.csv`;
+    
+    // 2. === LOGIC CHUYỂN ĐỔI MỚI ===
+    // (Bỏ group_id, đổi tên header sang tiếng Việt)
+    const valueHeader = (type === 'revenue') ? 'Doanh Thu' : 'Số Lượng';
+    let transformedData = [];
+
+    if (groupBy === 'KHACH_HANG') {
+        transformedData = lastGeneralReportData.map(row => ({
+            "Tên Khách Hàng": row.group_name,
+            "Số Điện Thoại": row.group_detail,
+            [valueHeader]: row.report_value
+        }));
+    } else if (groupBy === 'DICH_VU') {
+        transformedData = lastGeneralReportData.map(row => ({
+            "Tên Dịch Vụ": row.group_name,
+            "Nhóm Dịch Vụ": row.group_detail,
+            [valueHeader]: row.report_value
+        }));
+    } else if (groupBy === 'NHAN_VIEN') {
+        transformedData = lastGeneralReportData.map(row => ({
+            "Tên Nhân Viên": row.group_name,
+            "Chuyên Môn": row.group_detail,
+            [valueHeader]: row.report_value
+        }));
+    } else { // NHOM_DV
+        transformedData = lastGeneralReportData.map(row => ({
+            "Nhóm Dịch Vụ": row.group_name,
+            [valueHeader]: row.report_value
+        }));
+    }
+   const title = document.getElementById('report-title').textContent;
+    exportToCSV(transformedData, filename, title);
+}
+        
+        async function generateVipReport() {
+            const monthInput = document.getElementById('vip-report-month').value; // 'YYYY-MM'
+            if (!monthInput) {
+                showToast('Vui lòng chọn tháng để xem báo cáo.', true);
+                return;
+            }
+            
+            // 1. Gọi hàm RPC
+            const { data: vipCustomers, error } = await supaClient.rpc('get_vip_report', {
+                p_year_month: monthInput
+            });
+
+            if (error) {
+                console.error('Lỗi báo cáo VIP:', error);
+                showToast(`Lỗi: ${error.message}`, true);
+                lastVipReportData = [];;
+                return;
+            }
+            lastVipReportData = vipCustomers || [];
+
+            // 2. Render kết quả
+            const [year, month] = monthInput.split('-');
+            const title = `Báo cáo khách hàng thân thiết (Tháng ${month}/${year})`;
+            document.getElementById('vip-report-title').textContent = title;
+            
+            const body = document.getElementById('vip-report-table-body');
+            body.innerHTML = '';
+
+            if (vipCustomers.length === 0) {
+                body.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">Không có khách hàng thân thiết trong tháng này.</td></tr>`;
+            } else {
+                // Sắp xếp theo số tháng liên tiếp
+                vipCustomers.sort((a, b) => b.consecutive_months - a.consecutive_months);
+                
+                vipCustomers.forEach(vip => {
+                    body.innerHTML += `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${vip.TenKH}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${vip.SDTKH}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-medium">${formatCurrency(vip.spending_this_month)}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center">${vip.consecutive_months}</td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            document.getElementById('vip-report-results-container').classList.remove('hidden');
+        }
+
+        function exportVipReport() {
+    if (lastVipReportData.length === 0) {
+        showToast('Vui lòng chạy báo cáo trước khi xuất.', true);
+        return;
+    }
+    const filename = 'bao_cao_khach_hang_vip.csv';
+    
+    // CHUYỂN ĐỔI DỮ LIỆU (Bỏ MaKH, sửa lại tên key)
+    const transformedData = lastVipReportData.map(item => ({
+        "Tên Khách Hàng": item.TenKH,
+        "Số Điện Thoại": item.SDTKH,
+        "Chi Tiêu (Tháng)": item.spending_this_month,
+        "Số Tháng VIP Liên Tiếp": item.consecutive_months
+    }));
+    const title = document.getElementById('vip-report-title').textContent;
+    exportToCSV(transformedData, filename, title);
+}
+
+        async function generateStatusReport() {
+            const dateStart = document.getElementById('status-report-date-start').value;
+            const dateEnd = document.getElementById('status-report-date-end').value;
+
+            if (!dateStart || !dateEnd) {
+                showToast('Vui lòng chọn cả ngày bắt đầu và kết thúc.', true);
+                return;
+            }
+
+            // 1. Gọi hàm RPC
+            const { data: reportData, error } = await supaClient.rpc('get_status_report', {
+                start_date: `${dateStart}T00:00:00`,
+                end_date: `${dateEnd}T23:59:59`
+            });
+
+            if (error) {
+                console.error('Lỗi báo cáo trạng thái:', error);
+                showToast(`Lỗi: ${error.message}`, true);
+                lastStatusReportData = [];
+                return;
+            }
+            lastStatusReportData = reportData || [];
+
+            // 2. Xử lý kết quả
+            const totalAppointments = reportData.reduce((sum, item) => sum + item.count, 0);
+
+            const dateStartText = new Date(dateStart).toLocaleDateString('vi-VN');
+            const dateEndText = new Date(dateEnd).toLocaleDateString('vi-VN');
+            const title = `Báo cáo tỉ lệ lịch hẹn theo trạng thái (Từ ${dateStartText} - ${dateEndText}, Tổng: ${totalAppointments} lịch hẹn)`;
+            document.getElementById('status-report-title').textContent = title;
+            
+            const body = document.getElementById('status-report-table-body');
+            body.innerHTML = '';
+
+            if (totalAppointments === 0) {
+                body.innerHTML = `<tr><td colspan="3" class="px-6 py-4 text-center text-gray-500">Không có dữ liệu lịch hẹn trong khoảng thời gian này.</td></tr>`;
+            } else {
+                // Sắp xếp dữ liệu (ví dụ)
+                const allStatuses = { ...appointmentStatuses }; // Dùng object global đã nạp
+                reportData.forEach(item => {
+                    if (allStatuses[item.MaTT]) {
+                        allStatuses[item.MaTT].count = item.count;
+                    }
+                });
+
+                Object.keys(allStatuses).forEach(key => {
+                    const statusInfo = allStatuses[key];
+                    const count = statusInfo.count || 0; // Lấy số lượng, 0 nếu không có
+                    const percentage = totalAppointments > 0 ? ((count / totalAppointments) * 100).toFixed(1) : 0;
+                    
+                    body.innerHTML += `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-medium">
+                                    ${statusInfo.TrangThai}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${count}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${percentage}%</td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            document.getElementById('status-report-results-container').classList.remove('hidden');
+        }
+
+function exportStatusReport() {
+    if (lastStatusReportData.length === 0) {
+        showToast('Vui lòng chạy báo cáo trước khi xuất.', true);
+        return;
+    }
+    const filename = 'bao_cao_ti_le_trang_thai.csv';
+    
+    // CHUYỂN ĐỔI DỮ LIỆU (Sửa lại tên key)
+    const transformedData = lastStatusReportData.map(item => ({
+        "Tên Trạng Thái": appointmentStatuses[item.MaTT] ? appointmentStatuses[item.MaTT].TrangThai : item.MaTT,
+        "Số Lượng": item.count
+    }));
+    const title = document.getElementById('status-report-title').textContent;
+    exportToCSV(transformedData, filename, title);
+}
+
+        // --- HÀM XÓA CHUNG ---
+        
+        function showDeleteModal(itemName, callback) {
+            const deleteItemName = document.getElementById('delete-item-name');
+            deleteItemName.textContent = itemName;
+            deleteCallback = callback;
+            
+            const deleteBtn = document.getElementById('confirm-delete-btn');
+            deleteBtn.replaceWith(deleteBtn.cloneNode(true));
+            document.getElementById('confirm-delete-btn').addEventListener('click', confirmDelete);
+
+            openAdminModal('delete-confirm-modal');
+        }
+        
+        function confirmDelete() {
+            if (typeof deleteCallback === 'function') {
+                deleteCallback();
+            }
+            closeAdminModal('delete-confirm-modal');
+            deleteCallback = null;
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Tên thương hiệu -->
+    <title>Natalie Beauty Center - Đặt lịch</title>
+    <!-- Tải Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Thêm thư viện icon (Lucide) -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <!-- Google Fonts (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overscroll-behavior: none;
+        }
+        
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+    
+    <!-- Cấu hình màu "vàng đồng" (gold) chủ đạo -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Màu #efbf04
+                        primary: {
+                            light: '#fef9c3', 
+                            DEFAULT: '#efbf04', 
+                            medium: '#d4a903', 
+                            dark: '#b08d02'
+                        },
+                        'text-dark': '#1f2937', // gray-800
+                        'bg-light': '#f9fafb'  // gray-50
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-bg-light antialiased">
+
+    <!-- 
+      PHẦN 1: GIAO DIỆN KHÁCH HÀNG (CLIENT SITE)
+    -->
+    <div id="client-site" class="min-h-screen">
+        <!-- Header của Client (Nền tối) -->
+        <header class="bg-stone-800 sticky top-0 z-40">
+            <nav class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+                <div class="flex justify-between items-center h-16">
+                    <!-- Logo -->
+                    <div class="flex-shrink-0 flex items-center">
+                        <!-- Tăng chiều cao logo -->
+                        <img class="h-12 w-auto" 
+                             src="https://bizweb.dktcdn.net/thumb/medium/100/087/687/themes/727219/assets/logo.png?1762572547040" 
+                             alt="Logo Natalie Beauty Center"
+                             onerror="this.src='https://bizweb.dktcdn.net/thumb/medium/100/087/687/themes/727219/assets/logo.png?1762572547040';">
+                    </div>
+                    
+                    <!-- Bỏ nút Đăng nhập -->
+                </div>
+            </nav>
+        </header>
+
+        <!-- Nội dung chính của Client -->
+        <main class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl py-12">
+            
+            <!-- Màn hình bắt đầu (Nút đặt lịch ở trên) -->
+            <div id="start-screen" class="text-center max-w-3xl mx-auto">
+                <!-- THAY ĐỔI: Tên thương hiệu và Slogan -->
+                <h1 class="text-3xl font-bold text-gray-800 mb-4">Chào mừng đến với Natalie Beauty Center</h1>
+                <p class="text-lg text-gray-600 mb-8 italic">
+                    "Người phụ nữ HẤP DẪN NHẤT chính là khi cô ấy TỰ TIN và YÊU THƯƠNG chính mình."
+                </p>
+                
+                <!-- THAY ĐỔI: Nút đặt lịch lên trên ảnh -->
+                <button onclick="startBooking()" class="bg-primary hover:bg-primary-medium text-white font-bold py-3 px-8 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:-translate-y-1 mb-8">
+                    Đặt lịch ngay
+                </button>
+                
+                <!-- THAY ĐỔI: Thêm ảnh -->
+                <div>
+                    <img src="https://bizweb.dktcdn.net/100/087/687/themes/727219/assets/customer_service5.png?1763017808464" 
+                         alt="Hình ảnh Spa"
+                         class="w-full rounded-lg shadow-lg"
+                         onerror="this.src='https://bizweb.dktcdn.net/100/087/687/themes/727219/assets/customer_service5.png?1763017808464';">
+                </div>
+            </div>
+
+            <!-- Form Đặt lịch (Ẩn ban đầu) -->
+            <div id="booking-form-container" class="hidden max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-xl">
+                <h2 class="text-2xl font-bold text-text-dark mb-6 text-center">Tạo Lịch hẹn Mới</h2>
+                
+                <form id="booking-form" onsubmit="handleFormSubmit(event)">
+                    <div class="space-y-6">
+                        <!-- Thông tin khách hàng (TENKH, SDTKH) -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="TENKH" class="block text-sm font-medium text-gray-700 mb-1">Họ và tên (bắt buộc)</label>
+                                <input type="text" id="TENKH" name="TENKH" required
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
+                                       placeholder="Nguyễn Văn A">
+                            </div>
+                            <div>
+                                <label for="SDTKH" class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại (bắt buộc)</label>
+                                <!-- THÊM MỚI: Định dạng SĐT 10 số -->
+                                <input type="tel" id="SDTKH" name="SDTKH" required
+                                       pattern="[0-9]{10}" title="Số điện thoại phải có 10 chữ số."
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
+                                       placeholder="090xxxx123">
+                            </div>
+                        </div>
+
+                        <!-- 1. Chọn Cơ sở (CO_SO) -->
+                        <div>
+                            <label for="MaCS" class="block text-sm font-medium text-gray-700 mb-1">Chọn cơ sở (bắt buộc)</label>
+                            <select id="MaCS" name="MaCS" required onchange="handleFacilityChange()"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                                <option value="">-- Vui lòng chọn cơ sở --</option>
+                                <!-- JS sẽ thêm các cơ sở ở đây -->
+                            </select>
+                        </div>
+
+                        <!-- 2. Chọn Nhóm Dịch vụ (NHOM_DV) -->
+                        <div>
+                            <label for="MaNhomDV" class="block text-sm font-medium text-gray-700 mb-1">Chọn nhóm dịch vụ</label>
+                            <select id="MaNhomDV" name="MaNhomDV" onchange="populateServices(this.value)"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                                <option value="">-- Vui lòng chọn nhóm dịch vụ --</option>
+                                <!-- JS sẽ thêm các nhóm dịch vụ ở đây -->
+                            </select>
+                        </div>
+
+                        <!-- 3. Chọn Dịch vụ (DICH_VU) -->
+                        <div id="services-list-container" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Chọn dịch vụ (có thể chọn nhiều)</label>
+                            <div id="services-list" class="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3">
+                                <!-- Dịch vụ sẽ được thêm vào đây bằng JS -->
+                            </div>
+                        </div>
+
+                        <!-- 4. Chọn Nhân viên (NHAN_VIEN) -->
+                        <div id="staff-selection-container" class="hidden space-y-4">
+                            <!-- JS sẽ thêm lựa chọn nhân viên cho mỗi dịch vụ ở đây -->
+                        </div>
+
+                        <!-- 5. Chọn Ngày & Giờ (NgayDat) -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="booking-date" class="block text-sm font-medium text-gray-700 mb-1">Chọn ngày</label>
+                                <input type="date" id="booking-date" name="booking-date" required 
+                                       min="" onfocus="setMinDate()"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                            </div>
+                            <div>
+                                <label for="booking-time" class="block text-sm font-medium text-gray-700 mb-1">Chọn giờ</D>
+                                <!-- Giới hạn giờ hẹn -->
+                                <input type="time" id="booking-time" name="booking-time" required
+                                       min="08:00" max="17:00"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                            </div>
+                        </div>
+
+                        <!-- 6. Ghi chú -->
+                        <div>
+                            <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Ghi chú (tùy chọn)</label>
+                            <textarea id="notes" name="notes" rows="3"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
+                                      placeholder="Bạn có yêu cầu gì đặc biệt không?"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Nút bấm -->
+                    <div class="mt-8 flex justify-end">
+                        <button type="submit" class="bg-primary hover:bg-primary-medium text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-300">
+                            Xác nhận lịch hẹn
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Màn hình Xác nhận (Ẩn ban đầu) -->
+            <div id="confirmation-screen" class="hidden max-w-2xl mx-auto">
+                <!-- Thông báo thành công -->
+                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg shadow-md mb-6" role="alert">
+                    <div class="flex">
+                        <div class="py-1" id="icon-success"></div>
+                        <div class="ml-3">
+                            <p class="font-bold">Đặt lịch thành công!</p>
+                            <!-- THÊM MỚI: Thông báo cọc -->
+                            <p class="text-sm">Cảm ơn bạn đã tin tưởng Natalie Beauty Center.
+                                Sẽ có nhân viên gọi lại xác nhận và hướng dẫn bạn <strong>cọc 20%</strong> tổng giá trị lịch hẹn.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Khung thông tin -->
+                <div class="bg-white p-8 rounded-lg shadow-xl">
+                    <h2 class="text-2xl font-bold text-text-dark mb-6 text-center">Thông tin đặt lịch</h2>
+                    <div class="space-y-4 text-text-dark">
+                        <!-- Thông tin khách hàng -->
+                        <div class="border-b pb-4">
+                            <h3 class="font-semibold text-lg mb-2">Thông tin khách hàng</h3>
+                            <p><strong>Họ tên:</strong> <span id="confirm-TENKH"></span></p>
+                            <p><strong>Số điện thoại:</strong> <span id="confirm-SDTKH"></span></p>
+                        </div>
+
+                        <!-- Chi tiết lịch hẹn -->
+                        <div class="border-b pb-4">
+                            <h3 class="font-semibold text-lg mb-2">Chi tiết lịch hẹn</h3>
+                            <p><strong>Cơ sở:</strong> <span id="confirm-TenCS"></span></p>
+                            <p><strong>Ngày:</strong> <span id="confirm-date"></span></p>
+                            <p><strong>Giờ:</strong> <span id="confirm-time"></span></p>
+                            <p><strong>Ghi chú:</strong> <span id="confirm-notes"></span></p>
+                        </div>
+
+                        <!-- Dịch vụ & Tổng thời lượng/chi phí -->
+                        <div>
+                            <h3 class="font-semibold text-lg mb-2">Dịch vụ đã chọn (Chi tiết phiếu đặt)</h3>
+                            <ul id="confirm-services-list" class="space-y-2 mb-4">
+                                <!-- JS sẽ thêm dịch vụ vào đây (TenDV, TenNV...) -->
+                            </ul>
+                            <p class="text-lg font-bold text-primary-dark">
+                                Tổng thời lượng (dự kiến): <span id="confirm-total-duration" class="text-text-dark"></span>
+                            </p>
+                            <p class="text-lg font-bold text-primary-dark">
+                                Tổng chi phí (dự kiến): <span id="confirm-total-price" class="text-text-dark"></span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Nút bấm -->
+                    <div class="mt-8 flex justify-end">
+                        <button onclick="goBackToStart()" class="bg-primary hover:bg-primary-medium text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-300">
+                            Tạo lịch hẹn mới
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- 
+      PHẦN 4: JAVASCRIPT LOGIC
+    -->
+    <script>
+        const SUPABASE_URL = 'https://vxvkrfmcivagishayagn.supabase.co'; // <-- Dán URL dự án của bạn
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4dmtyZm1jaXZhZ2lzaGF5YWduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI4NjkzNDUsImV4cCI6MjA3ODQ0NTM0NX0.iSQ7HSr_mHk-Kf8WOV4S6-21VAhQTITGHSHnhIeRfD4'; // <-- Dán Anon Key
+
+    const supaClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+    // --- BIẾN TRẠNG THÁI CHUNG ---
+        let currentBookingData = {}; // Lưu trữ dữ liệu form tạm thời
+        
+        // DOM Elements (Cache)
+        const startScreen = document.getElementById('start-screen');
+        const bookingFormContainer = document.getElementById('booking-form-container');
+        const confirmationScreen = document.getElementById('confirmation-screen');
+        
+        // Các trường form (theo CSDL)
+        const facilitySelect = document.getElementById('MaCS');
+        const serviceGroupSelect = document.getElementById('MaNhomDV');
+        const servicesListContainer = document.getElementById('services-list-container');
+        const servicesList = document.getElementById('services-list');
+        const staffSelectionContainer = document.getElementById('staff-selection-container');
+        const bookingDateInput = document.getElementById('booking-date');
+        const bookingForm = document.getElementById('booking-form');
+        
+
+        // --- KHỞI TẠO ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Mặc định hiển thị Màn hình bắt đầu
+            showBookingStep('start');
+            
+            // Đặt ngày tối thiểu cho date picker là hôm nay
+            setMinDate();
+            
+            // Render các icon
+            renderIcons();
+            
+            // Tải dữ liệu CSDL (giả lập) vào các dropdown
+            populateInitialSelectors();
+        });
+        
+        // Hàm render icon (sử dụng Lucide)
+        function renderIcons() {
+            if (typeof lucide === 'undefined' || !lucide.createElement) {
+                console.warn('Lucide library not loaded.');
+                return;
+            }
+            
+            const icons = {
+                'icon-success': 'CheckCircle',
+            };
+            
+            Object.keys(icons).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.innerHTML = ''; 
+                    const iconName = icons[id];
+                    if (lucide.icons[iconName]) {
+                        const iconData = lucide.icons[iconName];
+                        const icon = lucide.createElement(iconData);
+                        icon.classList.add('w-6', 'h-6'); // Kích thước cho icon success
+                        el.appendChild(icon);
+                    }
+                }
+            });
+        }
+        
+        // Tải dữ liệu Cơ sở (CO_SO) và Nhóm Dịch vụ (NHOM_DV)
+        async function populateInitialSelectors() {
+            // Tải Cơ sở (CO_SO)
+            const { data: facilities, error: facError } = await supaClient
+                .from('CO_SO')
+                .select('*');
+            if (facError) {
+                console.error('Lỗi tải cơ sở:', facError);
+                return;
+            }
+            facilities.forEach(facility => {
+                facilitySelect.innerHTML += `<option value="${facility.MaCS}">${facility.TenCS}</option>`;
+            });
+            
+            // Tải Nhóm Dịch vụ (NHOM_DV)
+             const { data: groups, error: grError } = await supaClient
+                .from('NHOM_DV')
+                .select('*');
+            if (grError) {
+                console.error('Lỗi tải nhóm DV:', grError);
+                return;
+            }
+            groups.forEach(group => {
+                // (Bỏ qua nhóm 'Quản lý' nếu có)
+                if (group.MaNhomDV !== 'QL') {
+                    serviceGroupSelect.innerHTML += `<option value="${group.MaNhomDV}">${group.NhomDV}</option>`;
+                }
+            });
+        }
+
+        // --- QUẢN LÝ VIEW CHUNG ---
+        
+        function showToast(message, isError = false) {
+            // (Tạo một element toast động nếu cần, hoặc dùng một toast cố định)
+            console.log(`[Toast ${isError ? 'Error' : 'Success'}]: ${message}`);
+            // Tạo một toast đơn giản
+            const toast = document.createElement('div');
+            toast.textContent = message;
+            toast.className = `fixed bottom-5 right-5 py-3 px-6 rounded-lg shadow-xl text-white z-50 ${isError ? 'bg-red-500' : 'bg-green-500'}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        // THÊM MỚI: Hàm kiểm tra SĐT 10 số
+        function validatePhone(phone) {
+            return /^[0-9]{10}$/.test(phone);
+        }
+
+        // --- LOGIC CHO CLIENT SITE ---
+
+        function setMinDate() {
+            const today = new Date().toISOString().split('T')[0];
+            bookingDateInput.setAttribute('min', today);
+        }
+
+        function startBooking() {
+            showBookingStep('form');
+        }
+        
+        function showBookingStep(step) {
+            startScreen.classList.add('hidden');
+            bookingFormContainer.classList.add('hidden');
+            confirmationScreen.classList.add('hidden');
+            
+            if (step === 'start') {
+                startScreen.classList.remove('hidden');
+                bookingForm.reset(); 
+                populateServices(''); 
+            } else if (step === 'form') {
+                bookingFormContainer.classList.remove('hidden');
+            } else if (step === 'confirm') {
+                confirmationScreen.classList.remove('hidden');
+            }
+        }
+
+        function handleFacilityChange() {
+            // Khi đổi cơ sở (MaCS), reset lại các lựa chọn
+            serviceGroupSelect.value = '';
+            populateServices(''); // Xóa dịch vụ và nhân viên
+            showToast('Bạn đã đổi cơ sở. Vui lòng chọn lại dịch vụ.', true);
+        }
+
+        // Hiển thị DICH_VU dựa trên MaNhomDV
+        async function populateServices(maNhomDV) {
+            // (Phần code ẩn/hiện container của bạn vẫn giữ nguyên)
+            if (!maNhomDV) {
+                servicesList.innerHTML = '';
+                staffSelectionContainer.innerHTML = '';
+                servicesListContainer.classList.add('hidden');
+                staffSelectionContainer.classList.add('hidden');
+                return;
+            }
+
+            const existingGroup = document.getElementById(`group-container-${maNhomDV}`);
+            if (existingGroup) {
+                existingGroup.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                return;
+            }
+
+            // Tải DICH_VU từ Supabase
+            const { data: services, error } = await supaClient
+                .from('DICH_VU')
+                .select('*')
+                .eq('MaNhomDV', maNhomDV);
+            
+            if (error) {
+                console.error('Lỗi tải dịch vụ:', error);
+                return;
+            }
+
+            if (services.length > 0) {
+                // (Toàn bộ phần code tạo HTML của bạn giữ nguyên)
+                const groupContainer = document.createElement('div');
+                groupContainer.id = `group-container-${maNhomDV}`;
+                groupContainer.classList.add('mb-4', 'border', 'rounded-md', 'p-3', 'bg-gray-50', 'relative');
+                
+                const groupName = serviceGroupSelect.options[serviceGroupSelect.selectedIndex].text;
+                const groupTitle = document.createElement('h4');
+                groupTitle.textContent = groupName;
+                groupTitle.classList.add('text-md', 'font-semibold', 'text-text-dark', 'mb-2');
+                groupContainer.appendChild(groupTitle);
+                
+                services.forEach(service => {
+                    const div = document.createElement('div');
+                    div.classList.add('flex', 'items-center', 'justify-between');
+                    
+                    div.innerHTML = `
+                        <div class="flex items-center">
+                            <input id="${service.MaDV}" name="services" type="checkbox" value="${service.MaDV}"
+                                   data-name="${service.TenDV}" 
+                                   data-duration="${service.ThoiLuong}" 
+                                   data-price="${service.DonGiaDV}"
+                                   data-manhomdv="${service.MaNhomDV}"
+                                   onchange="updateStaffSelection(this)"
+                                   class="h-4 w-4 text-primary rounded border-gray-300 focus:ring-primary">
+                            <label for="${service.MaDV}" class="ml-3 text-sm text-gray-700">
+                                ${service.TenDV} (${service.ThoiLuong} phút) - <span class="font-medium text-primary-dark">${service.DonGiaDV.toLocaleString('vi-VN')} đ</span>
+                            </label>
+                        </div>
+                    `;
+                    groupContainer.appendChild(div);
+                });
+                
+                servicesList.appendChild(groupContainer);
+                servicesListContainer.classList.remove('hidden');
+            }
+        }
+
+        // Cập nhật ô chọn NHAN_VIEN khi check/uncheck DICH_VU
+        async function updateStaffSelection(checkbox) {
+            const maDV = checkbox.value;
+            const tenDV = checkbox.dataset.name;
+            const maNhomDV = checkbox.dataset.manhomdv;
+            const staffSelectorId = `staff-for-${maDV}`;
+            
+            if (checkbox.checked) {
+                staffSelectionContainer.classList.remove('hidden');
+                
+                const maCS = facilitySelect.value;
+                if (!maCS) {
+                    showToast('Vui lòng chọn cơ sở trước khi chọn dịch vụ!', true);
+                    checkbox.checked = false;
+                    return;
+                }
+                
+                // Tải NHAN_VIEN từ Supabase
+                const { data: staffForService, error } = await supaClient
+                    .from('NHAN_VIEN')
+                    .select('MaNV, TenNV')
+                    .eq('MaCS', maCS)
+                    .eq('MaNhomDV', maNhomDV);
+
+                if (error) {
+                    console.error('Lỗi tải nhân viên:', error);
+                }
+
+                const div = document.createElement('div');
+                div.id = staffSelectorId;
+                
+                let options = '<option value="">Bất kỳ nhân viên nào</option>';
+                if (staffForService && staffForService.length > 0) {
+                    staffForService.forEach(staff => {
+                        options += `<option value="${staff.MaNV}">${staff.TenNV}</option>`;
+                    });
+                } else {
+                    options += '<option value="" disabled>Không có NV chuyên môn này tại cơ sở</option>';
+                }
+                
+                // (Code HTML của bạn giữ nguyên)
+                div.innerHTML = `
+                    <label for="select-${staffSelectorId}" class="block text-sm font-medium text-gray-700">
+                        Nhân viên cho: <span class="font-semibold">${tenDV}</span> (tùy chọn)
+                    </label>
+                    <select id="select-${staffSelectorId}" name="staff-${maDV}"
+                            data-tennv=""
+                            onchange="this.dataset.tennv = this.options[this.selectedIndex].text"
+                            class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+                        ${options}
+                    </select>
+                `;
+                staffSelectionContainer.appendChild(div);
+                
+            } else {
+                // (Code xóa của bạn giữ nguyên)
+                const staffSelector = document.getElementById(staffSelectorId);
+                if (staffSelector) {
+                    staffSelector.remove();
+                }
+                if (staffSelectionContainer.children.length === 0) {
+                    staffSelectionContainer.classList.add('hidden');
+                }
+            }
+        }
+        
+        // Xử lý Submit Form Đặt lịch -> Hiển thị Xác nhận
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            
+            const phone = document.getElementById('SDTKH').value;
+            if (!validatePhone(phone)) {
+                showToast('Số điện thoại phải có 10 chữ số.', true);
+                return;
+            }
+            
+            const formData = new FormData(bookingForm);
+            currentBookingData = {}; // Reset
+            
+            // (Phần thu thập dữ liệu của bạn RẤT TỐT, giữ nguyên)
+            currentBookingData.MaCS = formData.get('MaCS');
+            currentBookingData.TenCS = facilitySelect.options[facilitySelect.selectedIndex].text;
+            currentBookingData.NgayDat = formData.get('booking-date');
+            currentBookingData.GioDat = formData.get('booking-time');
+            currentBookingData.GhiChu = formData.get('notes') || '(Không có)';
+            
+            currentBookingData.TENKH = formData.get('TENKH');
+            currentBookingData.SDTKH = phone;
+            
+            const chiTietPhieuDat = [];
+            let totalDuration = 0;
+            let totalPrice = 0; 
+            
+            document.querySelectorAll('input[name="services"]:checked').forEach(cb => {
+                const duration = parseInt(cb.dataset.duration, 10);
+                const price = parseInt(cb.dataset.price, 10);
+                
+                totalDuration += duration;
+                totalPrice += price;
+                
+                const staffSelect = document.getElementById(`select-staff-for-${cb.value}`);
+                const maNV = staffSelect ? staffSelect.value : null;
+                const tenNV = (staffSelect && maNV) ? staffSelect.dataset.tennv : 'Bất kỳ';
+
+                chiTietPhieuDat.push({
+                    MaDV: cb.value,
+                    TenDV: cb.dataset.name,
+                    MaNV: maNV || null,
+                    TenNV: tenNV,
+                    DonGiaDV: price, 
+                    ThoiLuong: duration 
+                });
+            });
+            
+            if (chiTietPhieuDat.length === 0) {
+                showToast('Vui lòng chọn ít nhất một dịch vụ!', true);
+                return;
+            }
+            
+            currentBookingData.ChiTietPhieuDat = chiTietPhieuDat;
+            currentBookingData.TongThoiLuong = totalDuration;
+            currentBookingData.TongTien = totalPrice; 
+            
+            // ===============================================
+            // == PHẦN MỚI: GỌI RPC ĐỂ ĐẶT LỊCH
+            // ===============================================
+            
+            // (Tạm thời vô hiệu hóa nút để tránh double-click)
+            event.target.querySelector('button[type="submit"]').disabled = true;
+            event.target.querySelector('button[type="submit"]').textContent = 'Đang xử lý...';
+
+            const { data, error } = await supaClient.rpc('create_new_booking', {
+                booking_data: currentBookingData 
+            });
+
+            if (error || (data && data.success === false)) {
+                console.error('Lỗi đặt lịch RPC:', error || data.message);
+                showToast(`Đã xảy ra lỗi: ${error ? error.message : data.message}`, true);
+                event.target.querySelector('button[type="submit"]').disabled = false;
+                event.target.querySelector('button[type="submit"]').textContent = 'Xác nhận lịch hẹn';
+                return;
+            }
+            
+            // ===============================================
+            // == THÀNH CÔNG: Hiển thị màn hình xác nhận
+            // ===============================================
+
+            // (Code hiển thị xác nhận của bạn giữ nguyên)
+            document.getElementById('confirm-TENKH').textContent = currentBookingData.TENKH;
+            document.getElementById('confirm-SDTKH').textContent = currentBookingData.SDTKH;
+            document.getElementById('confirm-TenCS').textContent = currentBookingData.TenCS;
+            document.getElementById('confirm-date').textContent = new Date(currentBookingData.NgayDat).toLocaleDateString('vi-VN');
+            document.getElementById('confirm-time').textContent = currentBookingData.GioDat;
+            document.getElementById('confirm-notes').textContent = currentBookingData.GhiChu;
+            
+            const confirmList = document.getElementById('confirm-services-list');
+            confirmList.innerHTML = '';
+            currentBookingData.ChiTietPhieuDat.forEach(ct => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <div class="border-b border-gray-200 pb-2">
+                        <strong>${ct.TenDV}</strong> (${ct.ThoiLuong} phút) - ${ct.DonGiaDV.toLocaleString('vi-VN')} đ
+                        <br><span class="ml-4 text-sm">Nhân viên: <em>${ct.TenNV}</em></span>
+                    </div>
+                `;
+                confirmList.appendChild(li);
+            });
+            
+            document.getElementById('confirm-total-duration').textContent = `${totalDuration} phút`;
+            document.getElementById('confirm-total-price').textContent = `${totalPrice.toLocaleString('vi-VN')} đ`;
+            
+            showBookingStep('confirm');
+            
+            // Reset lại nút
+            event.target.querySelector('button[type="submit"]').disabled = false;
+            event.target.querySelector('button[type="submit"]').textContent = 'Xác nhận lịch hẹn';
+        }
+        function goBackToStart() {
+            // 'start' sẽ ẩn màn hình xác nhận, hiện màn hình bắt đầu,
+            // và quan trọng nhất là reset (xóa) form
+            showBookingStep('start');
+        }
+
+    </script>
+</body>
+</html>
