@@ -1287,6 +1287,10 @@
             console.log('--- TẢI TẤT CẢ DỮ LIỆU HOÀN TẤT ---');
         }
 
+        async function updateCustomerRowRealtime(maKH) {
+            loadAndRenderCustomers();
+        }
+
         function setupRealtimeListener() {
             console.log('Đang thiết lập Realtime cho LICH_HEN VÀ HOA_DON...');
 
@@ -2038,37 +2042,6 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
             // Không render nữa, chỉ cần load lại
             loadAndRenderCustomers(); 
             showToast(`Sắp xếp ${customerSortOrder === 'desc' ? 'giảm dần' : 'tăng dần'}.`);
-        }
-
-        async function updateCustomerRowRealtime(maKH) {
-            const tableBody = document.getElementById('customers-table-body');
-            if (!tableBody) return;
-
-            // 1. Lấy dữ liệu mới nhất (totalSpending) từ VIEW
-            const { data: customer, error } = await supaClient
-                .from('v_khach_hang_details')
-                .select('*')
-                .eq('MaKH', maKH)
-                .single();
-            
-            if (error || !customer) {
-                console.error('Lỗi Realtime: Không lấy được chi tiêu mới cho KH', maKH);
-                return;
-            }
-            if (document.getElementById('tab-customers').classList.contains('hidden') === false) {
-                // Chỉ tải lại nếu tab khách hàng đang hiển thị
-                loadAndRenderCustomers();
-            } else {
-                // Nếu không hiển thị, chỉ load lại khi người dùng chuyển sang tab đó
-                // (Chúng ta sẽ bỏ qua bước này cho đơn giản, và chỉ tải lại khi có thay đổi)
-                
-                // **GIẢI PHÁP TỐI ƯU**: Cập nhật trực tiếp 1 hàng (cần code phức tạp hơn)
-                // Chúng ta sẽ dùng giải pháp đơn giản nhất cho bạn: Tải lại toàn bộ.
-            }
-            
-            // **GIẢI PHÁP BẮT BUỘC ĐỂ TRÁNH LỖI**:
-            // Vì bảng KH là phức tạp (có sort, search), ta phải tải lại toàn bộ
-            loadAndRenderCustomers();
         }
 
         async function openCustomerModal(maKH) {
