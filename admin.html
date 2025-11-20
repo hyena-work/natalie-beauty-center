@@ -475,7 +475,7 @@
                         
                         <!-- Khối 1: Báo cáo chung -->
                         <div id="general-report-block" class="bg-white p-6 rounded-lg shadow-lg">
-                            <h2 class="text-xl font-semibold text-text-dark mb-4">Báo cáo chung</h2>
+                            <h2 class="text-xl font-semibold text-text-dark mb-4">Báo cáo tổng hợp</h2>
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                                 <div>
                                     <label for="report-date-start" class="block text-sm font-medium text-gray-700">Từ ngày</label>
@@ -2500,7 +2500,7 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
             });
             
             if (error) {
-                console.error('Lỗi báo cáo chung:', error);
+                console.error('Lỗi báo cáo tổng hợp:', error);
                 showToast(`Lỗi: ${error.message}`, true);
                 lastGeneralReportData = [];
                 return;
