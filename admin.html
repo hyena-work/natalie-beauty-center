@@ -45,12 +45,42 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #a8a8a8;
         }
+        /* Bổ sung CSS cho thanh trượt thông báo 20s */
+        .realtime-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 50;
+            width: 320px; /* w-80 */
+            padding: 16px 12px 12px 16px; /* px-4 py-3 */
+            border-radius: 8px; /* rounded-lg */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-2xl */
+            color: white;
+            font-weight: 500;
+            overflow: hidden;
+            background-color: #10b981; /* Default green */
+            transition: all 0.5s ease-in-out;
+            transform: translateY(100px);
+            opacity: 0;
+        }
+
+        .realtime-notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .progress-bar-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px; /* h-1 */
+            background-color: rgba(255, 255, 255, 0.5); /* opacity-50 */
+            width: 100%;
+        }
     </style>
     
     <!-- Cấu hình màu "vàng đồng" (gold) chủ đạo -->
     <script>
-        
-        
         tailwind.config = {
             theme: {
                 extend: {
@@ -1151,7 +1181,7 @@
             }
         }
         
-        function showToast(message, isError = false) {
+        function showSimpleToast(message, isError = false) {
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toast-message');
             
@@ -1170,6 +1200,9 @@
                 toast.classList.add('opacity-0');
                 setTimeout(() => toast.classList.add('hidden'), 300);
             }, 3000);
+        }
+        function showToast(message, isError = false) {
+            showSimpleToast(message, isError); // Luôn gọi hàm ngắn cho các thông báo chung
         }
 
         // --- QUẢN LÝ MODAL ---
@@ -1266,14 +1299,20 @@
           schema: 'public',
           table: 'LICH_HEN' // Trên bảng LICH_HEN
         },
-        (payload) => {
+        async (payload) => {
           // Khi có lịch hẹn mới, Supabase sẽ gọi hàm này
           
           console.log('Phát hiện lịch hẹn MỚI!', payload.new);
-          
-          // Hiển thị thông báo (toast) cho admin biết
-          showToast('Có lịch hẹn mới, đang tự động cập nhật...', false);
-          
+          const maDatLich = payload.new.MaDatLich;
+          const summary = await getAppointmentSummary(maDatLich); // Lấy thông tin chi tiết
+          if (summary) {
+            const mainMsg = `${summary.tenKH} (${summary.tenCS})`;
+            const subMsg = `${summary.serviceCount} dịch vụ vào ${summary.dateTime}`;
+            showRealtimeNotification(mainMsg, subMsg, false); // Gọi hàm 20s mới
+          } else {
+            // Nếu lấy chi tiết thất bại
+            showToast(`Có lịch hẹn mới. Mã: ${maDatLich.slice(0, 8)}... - Đang chờ xử lý`, true);
+          }
           // Chạy lại hàm tải và render chính của bạn
           // Nó sẽ tự động lấy dữ liệu mới nhất (bao gồm cả lịch hẹn mới)
           loadAndRenderAppointments();
@@ -1481,6 +1520,87 @@
             
             // Cập nhật Stats (Hàm này vẫn dùng code cũ)
             updateAppointmentStats(filteredData);
+        }
+        const NOTIFICATION_DURATION = 20000; // 20 giây
+
+        function showRealtimeNotification(mainMsg, subMsg, isError = false) {
+            const toast = document.createElement('div');
+            const toastId = 'toast-' + Date.now(); // Dùng ID duy nhất cho thanh trượt
+
+            // Nội dung thông báo (Cấu trúc 2 dòng + icon + progress bar)
+            toast.innerHTML = `
+                <div class="flex items-start">
+                    <div class="flex-grow">
+                        <span class="font-bold block text-base">${mainMsg}</span>
+                        ${subMsg ? `<span class="text-xs opacity-90 block mt-0.5">${subMsg}</span>` : ''}
+                    </div>
+                </div>
+                <!-- Thanh trượt đếm ngược (Progress Bar) -->
+                <div id="${toastId}-progress" class="progress-bar-fill"></div>
+            `;
+            
+            // Style (CSS) cho thông báo
+            toast.className = `
+                realtime-notification 
+                ${isError ? 'bg-red-600' : 'bg-green-600'}
+            `;
+
+            document.body.appendChild(toast);
+
+            // 1. Hiệu ứng hiện lên (dùng class show)
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+
+            // 2. Kích hoạt thanh trượt
+            const progressBar = document.getElementById(`${toastId}-progress`);
+            if (progressBar) {
+                progressBar.style.width = '100%';
+                progressBar.style.transition = `width ${NOTIFICATION_DURATION}ms linear`;
+                
+                // Bắt đầu đếm ngược chiều rộng về 0
+                setTimeout(() => {
+                    progressBar.style.width = '0';
+                }, 100); 
+            }
+
+            // 3. Tự động ẩn đi sau 20 giây
+            setTimeout(() => {
+                toast.classList.remove('show'); // Ẩn
+                // Xóa khỏi DOM sau khi ẩn xong
+                setTimeout(() => toast.remove(), 500);
+            }, NOTIFICATION_DURATION);
+        }
+        async function getAppointmentSummary(maDatLich) {
+            const { data: app, error } = await supaClient
+                .from('LICH_HEN')
+                .select(`
+                    NgayDat,
+                    KHACH_HANG (TenKH),
+                    CO_SO (TenCS),
+                    CT_PHIEU_DAT(MaDV) 
+                `)
+                .eq('MaDatLich', maDatLich)
+                .single();
+
+            if (error || !app) {
+                console.error('Lỗi lấy dữ liệu tóm tắt cho notification:', error);
+                return null;
+            }
+            
+            const serviceCount = app.CT_PHIEU_DAT ? app.CT_PHIEU_DAT.length : 0;
+            
+            // Format date/time
+            const dateObj = new Date(app.NgayDat);
+            const timeStr = dateObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            const dateStr = dateObj.toLocaleDateString('vi-VN');
+
+            return {
+                tenKH: app.KHACH_HANG?.TenKH || 'Khách vãng lai',
+                tenCS: app.CO_SO?.TenCS || 'Không rõ',
+                dateTime: `${timeStr} - ${dateStr}`,
+                serviceCount: serviceCount
+            };
         }
 
         // Cập nhật Stats động
