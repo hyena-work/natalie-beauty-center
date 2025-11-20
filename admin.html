@@ -1288,45 +1288,70 @@
         }
 
         function setupRealtimeListener() {
-    console.log('Đang thiết lập Realtime cho LICH_HEN...');
+            console.log('Đang thiết lập Realtime cho LICH_HEN VÀ HOA_DON...');
 
-    const channel = supaClient
-      .channel('lich_hen_changes') // Đặt tên kênh (channel) bất kỳ
-      .on(
-        'postgres_changes', // Lắng nghe thay đổi CSDL
-        { 
-          event: 'INSERT', // Chỉ lắng nghe khi có 'INSERT' (thêm mới)
-          schema: 'public',
-          table: 'LICH_HEN' // Trên bảng LICH_HEN
-        },
-        async (payload) => {
-          // Khi có lịch hẹn mới, Supabase sẽ gọi hàm này
-          
-          console.log('Phát hiện lịch hẹn MỚI!', payload.new);
-          const maDatLich = payload.new.MaDatLich;
-          const summary = await getAppointmentSummary(maDatLich); // Lấy thông tin chi tiết
-          if (summary) {
-            const mainMsg = `${summary.tenKH} (${summary.tenCS})`;
-            const subMsg = `${summary.serviceCount} dịch vụ vào ${summary.dateTime}`;
-            showRealtimeNotification(mainMsg, subMsg, false); // Gọi hàm 20s mới
-          } else {
-            // Nếu lấy chi tiết thất bại
-            showToast(`Có lịch hẹn mới. Mã: ${maDatLich.slice(0, 8)}... - Đang chờ xử lý`, true);
-          }
-          // Chạy lại hàm tải và render chính của bạn
-          // Nó sẽ tự động lấy dữ liệu mới nhất (bao gồm cả lịch hẹn mới)
-          loadAndRenderAppointments();
+            const channel = supaClient
+            .channel('lich_hen_changes') // Đặt tên kênh (channel) bất kỳ
+            .on(
+                'postgres_changes', // Lắng nghe thay đổi CSDL
+                { 
+                event: 'INSERT', // Chỉ lắng nghe khi có 'INSERT' (thêm mới)
+                schema: 'public',
+                table: 'LICH_HEN' // Trên bảng LICH_HEN
+                },
+                async (payload) => {
+                // Khi có lịch hẹn mới, Supabase sẽ gọi hàm này
+                
+                console.log('Phát hiện lịch hẹn MỚI!', payload.new);
+                const maDatLich = payload.new.MaDatLich;
+                const summary = await getAppointmentSummary(maDatLich); // Lấy thông tin chi tiết
+                if (summary) {
+                    const mainMsg = `${summary.tenKH} (${summary.tenCS})`;
+                    const subMsg = `${summary.serviceCount} dịch vụ vào ${summary.dateTime}`;
+                    showRealtimeNotification(mainMsg, subMsg, false); // Gọi hàm 20s mới
+                } else {
+                    // Nếu lấy chi tiết thất bại
+                    showToast(`Có lịch hẹn mới. Mã: ${maDatLich.slice(0, 8)}... - Đang chờ xử lý`, true);
+                }
+                // Chạy lại hàm tải và render chính của bạn
+                // Nó sẽ tự động lấy dữ liệu mới nhất (bao gồm cả lịch hẹn mới)
+                loadAndRenderAppointments();
+                }
+            )
+            .subscribe((status) => {
+                // Hàm này báo cho bạn biết trạng thái kết nối
+                if (status === 'SUBSCRIBED') {
+                console.log('Đã kết nối Realtime thành công!');
+                } else {
+                console.log('Lỗi kết nối Realtime:', status);
+                }
+            });
+            const invoiceChannel = supaClient
+            .channel('invoice_update') 
+            .on(
+                'postgres_changes',
+                { 
+                event: '*', // Lắng nghe INSERT, UPDATE (vì upsert là cả hai)
+                schema: 'public',
+                table: 'HOA_DON' 
+                },
+                (payload) => {
+                console.log('Phát hiện thay đổi Hóa đơn (UPDATE/INSERT)!', payload.new);
+                const maKH = payload.new.MaKH;
+                if (maKH) {
+                    // Cập nhật hàng khách hàng đó (Realtime Total Spending)
+                    updateCustomerRowRealtime(maKH);
+                }
+                }
+            ).subscribe();
+            
+            // Kiểm tra trạng thái đăng ký của kênh 2
+            invoiceChannel.subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                console.log('Đã kết nối Realtime HOA_DON thành công!');
+                }
+            });
         }
-      )
-      .subscribe((status) => {
-        // Hàm này báo cho bạn biết trạng thái kết nối
-        if (status === 'SUBSCRIBED') {
-          console.log('Đã kết nối Realtime thành công!');
-        } else {
-          console.log('Lỗi kết nối Realtime:', status);
-        }
-      });
-}
 
         function showAdminTab(tabName) {
             // Bước 1: Ẩn tất cả các tab (Cả bằng class và style)
@@ -2013,6 +2038,37 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
             // Không render nữa, chỉ cần load lại
             loadAndRenderCustomers(); 
             showToast(`Sắp xếp ${customerSortOrder === 'desc' ? 'giảm dần' : 'tăng dần'}.`);
+        }
+
+        async function updateCustomerRowRealtime(maKH) {
+            const tableBody = document.getElementById('customers-table-body');
+            if (!tableBody) return;
+
+            // 1. Lấy dữ liệu mới nhất (totalSpending) từ VIEW
+            const { data: customer, error } = await supaClient
+                .from('v_khach_hang_details')
+                .select('*')
+                .eq('MaKH', maKH)
+                .single();
+            
+            if (error || !customer) {
+                console.error('Lỗi Realtime: Không lấy được chi tiêu mới cho KH', maKH);
+                return;
+            }
+            if (document.getElementById('tab-customers').classList.contains('hidden') === false) {
+                // Chỉ tải lại nếu tab khách hàng đang hiển thị
+                loadAndRenderCustomers();
+            } else {
+                // Nếu không hiển thị, chỉ load lại khi người dùng chuyển sang tab đó
+                // (Chúng ta sẽ bỏ qua bước này cho đơn giản, và chỉ tải lại khi có thay đổi)
+                
+                // **GIẢI PHÁP TỐI ƯU**: Cập nhật trực tiếp 1 hàng (cần code phức tạp hơn)
+                // Chúng ta sẽ dùng giải pháp đơn giản nhất cho bạn: Tải lại toàn bộ.
+            }
+            
+            // **GIẢI PHÁP BẮT BUỘC ĐỂ TRÁNH LỖI**:
+            // Vì bảng KH là phức tạp (có sort, search), ta phải tải lại toàn bộ
+            loadAndRenderCustomers();
         }
 
         async function openCustomerModal(maKH) {
