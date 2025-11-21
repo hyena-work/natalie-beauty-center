@@ -1310,8 +1310,8 @@
                 const maDatLich = payload.new.MaDatLich;
                 const summary = await getAppointmentSummary(maDatLich); // Lấy thông tin chi tiết
                 if (summary) {
-                    const mainMsg = `${summary.tenKH} (${summary.tenCS})`;
-                    const subMsg = `${summary.serviceCount} dịch vụ vào ${summary.dateTime}`;
+                    const mainMsg = `Mới: ${summary.tenKH} (${summary.tenCS})`;
+                    const subMsg = `đặt ${summary.serviceCount} dịch vụ vào ${summary.dateTime}`;
                     showRealtimeNotification(mainMsg, subMsg, false); // Gọi hàm 20s mới
                 } else {
                     // Nếu lấy chi tiết thất bại
