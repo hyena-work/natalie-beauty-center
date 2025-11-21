@@ -1537,6 +1537,25 @@
                        app.TenKH.toLowerCase().includes(searchTerm) || 
                        app.SDTKH.includes(searchTerm);
             });
+            filteredData.sort((a, b) => {
+                // Lấy tên trạng thái từ object global appointmentStatuses
+                // Lưu ý: appointmentStatuses phải đã được load trước đó
+                const statusA = appointmentStatuses[a.MaTT]?.TrangThai || '';
+                const statusB = appointmentStatuses[b.MaTT]?.TrangThai || '';
+
+                // Kiểm tra xem trạng thái có phải là 'Chờ xác nhận' không
+                const isPendingA = statusA === 'Chờ xác nhận';
+                const isPendingB = statusB === 'Chờ xác nhận';
+
+                // Nếu a là Chờ xác nhận mà b không phải -> a lên trước (-1)
+                if (isPendingA && !isPendingB) return -1;
+                // Nếu b là Chờ xác nhận mà a không phải -> b lên trước (1)
+                if (!isPendingA && isPendingB) return 1;
+
+                // Nếu cùng nhóm (cùng chờ hoặc cùng không chờ), sắp xếp theo ngày giảm dần
+                // Ưu tiên dùng appDate (đã được xử lý) hoặc NgayDat gốc
+                return new Date(b.appDate) - new Date(a.appDate);
+            });
 
             // 5. RENDER 
             tableBody.innerHTML = ''; // Xóa 'Đang tải...'
