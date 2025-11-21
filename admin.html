@@ -2101,7 +2101,7 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
                 .select(`
                     *,
                     CO_SO (TenCS),
-                    TT_LICH_HEN (TrangThai, class),
+                    TT_LICH_HEN (TrangThai),
                     CT_PHIEU_DAT (
                         DICH_VU (TenDV, DonGiaDV)
                     )
@@ -2129,9 +2129,6 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
                     
                     const facilityName = app.CO_SO?.TenCS || 'Cơ sở không xác định';
                     const statusName = app.TT_LICH_HEN?.TrangThai || 'Không rõ';
-                    // Dùng class màu từ DB hoặc mặc định
-                    const statusClass = app.TT_LICH_HEN?.class || 'bg-gray-100 text-gray-800'; 
-
                     // Xử lý dịch vụ và tổng tiền
                     let serviceNames = [];
                     let totalPrice = 0;
