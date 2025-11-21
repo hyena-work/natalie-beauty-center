@@ -2083,6 +2083,101 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
                 });
             }
         }
+
+        async function showCustomerHistory(maKH, tenKH) {
+            // 1. Cập nhật tiêu đề Modal
+            document.getElementById('cust-history-subtitle').textContent = `Khách hàng: ${tenKH}`;
+            const listEl = document.getElementById('cust-history-list');
+            const emptyEl = document.getElementById('cust-history-empty');
+            
+            listEl.innerHTML = '<div class="text-center text-gray-500 py-4">Đang tải dữ liệu...</div>';
+            emptyEl.classList.add('hidden');
+            openAdminModal('customer-history-modal');
+
+            // 2. Lấy dữ liệu từ Supabase
+            // (Lấy tất cả lịch hẹn của MaKH này, sắp xếp mới nhất lên đầu)
+            const { data: appointments, error } = await supaClient
+                .from('LICH_HEN')
+                .select(`
+                    *,
+                    CO_SO (TenCS),
+                    TT_LICH_HEN (TrangThai, class),
+                    CT_PHIEU_DAT (
+                        DICH_VU (TenDV, DonGiaDV)
+                    )
+                `)
+                .eq('MaKH', maKH)
+                .order('NgayDat', { ascending: false });
+
+            listEl.innerHTML = ''; // Xóa loading
+
+            if (error) {
+                console.error('Lỗi tải lịch sử:', error);
+                listEl.innerHTML = '<div class="text-center text-red-500">Lỗi tải dữ liệu.</div>';
+                return;
+            }
+
+            if (!appointments || appointments.length === 0) {
+                emptyEl.classList.remove('hidden');
+            } else {
+                // 3. Render từng lịch hẹn
+                appointments.forEach(app => {
+                    // Tính toán dữ liệu hiển thị
+                    const dateObj = new Date(app.NgayDat);
+                    const dateStr = dateObj.toLocaleDateString('vi-VN');
+                    const timeStr = dateObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                    
+                    const facilityName = app.CO_SO?.TenCS || 'Cơ sở không xác định';
+                    const statusName = app.TT_LICH_HEN?.TrangThai || 'Không rõ';
+                    // Dùng class màu từ DB hoặc mặc định
+                    const statusClass = app.TT_LICH_HEN?.class || 'bg-gray-100 text-gray-800'; 
+
+                    // Xử lý dịch vụ và tổng tiền
+                    let serviceNames = [];
+                    let totalPrice = 0;
+                    
+                    if (app.CT_PHIEU_DAT && app.CT_PHIEU_DAT.length > 0) {
+                        app.CT_PHIEU_DAT.forEach(ct => {
+                            if (ct.DICH_VU) {
+                                serviceNames.push(ct.DICH_VU.TenDV);
+                                totalPrice += (ct.DICH_VU.DonGiaDV || 0);
+                            }
+                        });
+                    } else {
+                        serviceNames.push('Không có dịch vụ');
+                    }
+
+                    // Tạo HTML cho 1 thẻ lịch sử
+                    const card = document.createElement('div');
+                    card.className = 'bg-white border border-gray-200 rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow duration-200';
+                    
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <div class="text-sm text-gray-500 mb-1">
+                                    <span class="font-medium text-gray-700">${facilityName}</span> 
+                                    &bull; ${timeStr} - ${dateStr}
+                                </div>
+                                <div class="flex flex-wrap gap-1">
+                                    ${serviceNames.map(name => 
+                                        `<span class="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">${name}</span>`
+                                    ).join('')}
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-lg font-bold text-primary-dark mb-1">
+                                    ${formatCurrency(totalPrice)}
+                                </div>
+                                <span class="inline-flex text-xs font-semibold px-2 py-1 rounded-full ${statusClass}">
+                                    ${statusName}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                    listEl.appendChild(card);
+                });
+            }
+        }
         
         function sortCustomersBySpending() {
             customerSortOrder = (customerSortOrder === 'desc') ? 'asc' : 'desc';
