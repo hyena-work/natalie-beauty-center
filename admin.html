@@ -671,7 +671,7 @@
     </div>
     
     <!-- 
-      PHẦN 3: MODALS (ADMIN) - ĐÃ CẬP NHẬT ID TRƯỜNG
+      PHẦN 3: MODALS (ADMIN)
     -->
 
     <!-- Modal 1: Sửa Lịch hẹn (LICH_HEN) -->
@@ -979,7 +979,49 @@
             </div>
         </div>
     </div>
+    <!-- MODAL LỊCH SỬ KHÁCH HÀNG -->
+    <div id="customer-history-modal" class="hidden fixed inset-0 z-50 overflow-y-auto p-4" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeAdminModal('customer-history-modal')"></div>
 
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+                
+                <!-- Header -->
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg leading-6 font-bold text-gray-900" id="cust-history-title">
+                                Lịch sử sử dụng dịch vụ
+                            </h3>
+                            <p class="text-sm text-gray-500 mt-1" id="cust-history-subtitle">Khách hàng: ...</p>
+                        </div>
+                        <button onclick="closeAdminModal('customer-history-modal')" class="text-gray-400 hover:text-gray-500">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Body (Danh sách lịch sử) -->
+                <div class="bg-gray-50 px-4 py-4 sm:p-6 max-h-[60vh] overflow-y-auto">
+                    <div id="cust-history-list" class="space-y-4">
+                        <!-- JS sẽ thêm các thẻ lịch sử vào đây -->
+                    </div>
+                    <p id="cust-history-empty" class="hidden text-center text-gray-500 italic py-4">Khách hàng này chưa có lịch sử đặt lịch nào.</p>
+                </div>
+
+                <!-- Footer -->
+                <div class="bg-white px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" onclick="closeAdminModal('customer-history-modal')" 
+                            class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:w-auto sm:text-sm">
+                        Đóng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Toast Message (Thông báo thành công/lỗi) -->
     <div id="toast" class="hidden fixed bottom-5 right-5 bg-green-500 text-white py-3 px-6 rounded-lg shadow-xl transition-opacity duration-300 z-[100]">
@@ -2024,7 +2066,12 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
                     // Code render HTML của bạn vẫn giữ nguyên vì 'cust' 
                     // đã có 'totalSpending' nhờ View.
                     tr.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${cust.TenKH}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <button onclick="showCustomerHistory('${cust.MaKH}', '${cust.TenKH}')" 
+                                    class="text-sm font-medium text-gray-900 hover:text-primary-dark text-left focus:outline-none transition-colors duration-200">
+                                ${cust.TenKH}
+                            </button>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${cust.SDTKH}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${formatCurrency(cust.totalSpending)}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
