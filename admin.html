@@ -15,25 +15,25 @@
 
     <style>
         body {
-            font-family: 'Inter', sans-serif;
-            overscroll-behavior: none;
+                    font-family: 'Inter', sans-serif;
+                    overscroll-behavior: none;
+                }
+                input[type=number]::-webkit-inner-spin-button,
+                input[type=number]::-webkit-outer-spin-button {
+                    appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+                    margin: 0;
+                }
+                input[type=number] {
+            appearance: textfield;
+            -moz-appearance: textfield;
+            -webkit-appearance: none;
         }
-        input[type=number]::-webkit-inner-spin-button,
-        input[type=number]::-webkit-outer-spin-button {
-            appearance: none;
--webkit-appearance: none;
--moz-appearance: none;
-            margin: 0;
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
-        input[type=number] {
-    appearance: textfield;
-    -moz-appearance: textfield;
-    -webkit-appearance: none;
-}
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
         ::-webkit-scrollbar-track {
             background: #f1f1f1;
             border-radius: 10px;
@@ -45,7 +45,7 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #a8a8a8;
         }
-        /* Bổ sung CSS cho thanh trượt thông báo 20s */
+        /* CSS cho thanh trượt thông báo 20s */
         .realtime-notification {
             position: fixed;
             bottom: 20px;
@@ -79,13 +79,12 @@
         }
     </style>
     
-    <!-- Cấu hình màu "vàng đồng" (gold) chủ đạo -->
+    <!-- Cấu hình màu gold chủ đạo -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        // Màu #efbf04
                         primary: {
                             light: '#fef9c3', 
                             DEFAULT: '#efbf04', 
@@ -151,7 +150,7 @@
       PHẦN 2: TRANG QUẢN LÝ ADMIN (ADMIN DASHBOARD)
     -->
     <div id="admin-dashboard" class="hidden">
-        <!-- Lớp nền mờ cho modal (Sửa lỗi Z-index) -->
+        <!-- Lớp nền mờ cho modal -->
         <div id="admin-modal-backdrop" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 z-40"></div>
 
         <div class="flex h-screen bg-bg-light">
@@ -159,7 +158,7 @@
             <nav class="w-64 bg-stone-800 shadow-lg flex flex-col flex-shrink-0 text-gray-300">
                 <!-- Logo Admin -->
                 <div class="h-20 flex items-center justify-center px-4">
-                    <!-- Phóng to logo -->
+                    <!-- Logo -->
                     <img class="h-16 w-auto" 
                          src="https://bizweb.dktcdn.net/thumb/medium/100/087/687/themes/727219/assets/logo.png?1762572547040" 
                          alt="Logo Natalie Beauty Center"
@@ -208,7 +207,7 @@
                 </div>
             </nav>
 
-            <!-- Main Content Area -->
+            <!-- Nội dung chính -->
             <main class="flex-1 flex flex-col overflow-hidden">
                 <!-- Header của Main Content (Nền tối) -->
                 <header class="h-16 bg-stone-800 shadow-sm flex items-center justify-between px-6">
@@ -262,7 +261,6 @@
                                     <label for="filter-MaCS-app" class="block text-sm font-medium text-gray-700">Cơ sở</label> 
                                     <select id="filter-MaCS-app" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
                                         <option value="all">Tất cả cơ sở</option>
-                                        <!-- JS sẽ thêm các cơ sở ở đây -->
                                     </select>
                                 
                                 </div>
@@ -440,8 +438,6 @@
                                     <div class="bg-gray-50 px-4 py-4 sm:p-6 max-h-96 overflow-y-auto">
                                         <ul id="emp-schedule-list" class="space-y-3">
                                             <!-- JS sẽ thêm các lịch hẹn vào đây -->
-                                            <!-- Ví dụ: -->
-                                            <!-- <li class="bg-white p-3 rounded-md shadow-sm border border-gray-200">...</li> -->
                                         </ul>
                                         <p id="emp-schedule-empty" class="hidden text-center text-gray-500 italic mt-4">Nhân viên này chưa có lịch hẹn nào sắp tới.</p>
                                     </div>
@@ -503,7 +499,7 @@
                     <!-- Tab 5: Báo cáo / Thống kê -->
                     <div id="tab-reports" class="admin-tab-content hidden space-y-6">
                         
-                        <!-- Khối 1: Báo cáo chung -->
+                        <!-- Khối 1: Báo cáo tổng hợp -->
                         <div id="general-report-block" class="bg-white p-6 rounded-lg shadow-lg">
                             <h2 class="text-xl font-semibold text-text-dark mb-4">Báo cáo tổng hợp</h2>
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
@@ -551,7 +547,7 @@
                             </button>
                             </div>
                             
-                            <!-- Bảng kết quả chung -->
+                            <!-- Bảng kết quả tổng hợp -->
                             <div id="report-results-container" class="mt-6 hidden">
                                 <h3 id="report-title" class="text-lg font-semibold text-text-dark mb-2">Kết quả báo cáo</h3>
                                 <div class="overflow-x-auto border rounded-lg">
@@ -576,7 +572,7 @@
                                 <div class="flex space-x-2" class="self-end">
                                     <button onclick="generateVipReport()" class="flex items-center bg-primary hover:bg-primary-medium text-white font-medium py-2 px-4 rounded-lg shadow-md transition duration-300 whitespace-nowrap">
                                         <span class="mr-2" id="icon-view-vip-report"></span>
-                                        Xem báo cáo VIP
+                                        Xem báo cáo
                                     </button>
                                     <button onclick="exportVipReport()" 
                                             title="Xuất Excel (.csv)"
@@ -593,7 +589,7 @@
                                 </div>
                             </div>
 
-                            <!-- Bảng kết quả VIP -->
+                            <!-- Bảng kết quả KHTT -->
                             <div id="vip-report-results-container" class="mt-6 hidden">
                                 <h3 id="vip-report-title" class="text-lg font-semibold text-text-dark mb-2">Kết quả báo cáo</h3>
                                 <div class="overflow-x-auto border rounded-lg">
@@ -702,7 +698,7 @@
                             </div>
                             <div class="md:col-span-2">
                                 <label for="app-MaTT" class="block text-sm font-medium text-gray-700">Trạng thái</label>
-                                <select id="app-MaTT" onchange="updateDropdownColor(this)" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
+                                <select id="app-MaTT" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" required>
                                     <!-- Các option sẽ được JS thêm vào -->
                                 </select>
                             </div>
@@ -1030,30 +1026,17 @@
 
 
     <!-- 
-      PHẦN 4: JAVASCRIPT LOGIC (ADMIN) - ĐÃ CẬP NHẬT THEO CSDL
+      PHẦN 4: JAVASCRIPT LOGIC (ADMIN)
     -->
-    <script> const SUPABASE_URL = 'https://vxvkrfmcivagishayagn.supabase.co'; // <-- Dán URL dự án của bạn
+    <script> const SUPABASE_URL = 'https://vxvkrfmcivagishayagn.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4dmtyZm1jaXZhZ2lzaGF5YWduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI4NjkzNDUsImV4cCI6MjA3ODQ0NTM0NX0.iSQ7HSr_mHk-Kf8WOV4S6-21VAhQTITGHSHnhIeRfD4'; // <-- Dán Anon Key
 
     const supaClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-    const statusColorMap = {
-    'Chờ xác nhận': 'bg-yellow-100 text-yellow-700',
-    'Đã xác nhận': 'bg-blue-100 text-blue-700',
-    'Đang thực hiện': 'bg-violet-100 text-violet-700',
-    'Đã thanh toán': 'bg-green-100 text-green-700',
-    'Hoàn thành': 'bg-emerald-100 text-emerald-700',
-    'Đã huỷ': 'bg-red-100 text-red-700',
-    'Không đến': 'bg-slate-100 text-slate-700'
-};
-        let appointmentStatuses = {};
-        
-        
-
-        // --- BIẾN TRẠNG THÁI CHUNG ---
+    let appointmentStatuses = {};
+    // --- BIẾN TRẠNG THÁI CHUNG ---
         const modalBackdrop = document.getElementById('admin-modal-backdrop');
-        let deleteCallback = null; // Lưu hàm callback khi xóa
-        let customerSortOrder = 'desc'; // 'asc' hoặc 'desc'
+        let deleteCallback = null;
+        let customerSortOrder = 'desc'; 
         
 
         // --- KHỞI TẠO ---
@@ -1118,7 +1101,6 @@
                 const placeholder = select.id === 'staff-MaNhomDV' ? '-- Chọn chuyên môn --' : '-- Chọn nhóm --';
                 select.innerHTML = `<option value="">${placeholder}</option>`;
                 groups.forEach(group => {
-                    // Loại trừ nhóm "Quản lý" (QL) khỏi form Dịch vụ
                     if (select.id === 'service-MaNhomDV' && group.MaNhomDV === 'QL') {
                         return;
                     }
@@ -1144,7 +1126,6 @@
                 // Nạp vào object global để tra cứu
                 appointmentStatuses[status.MaTT] = {
                     TrangThai: status.TrangThai,
-                    // Giả sử CSDL của bạn có cột 'class' (nếu không, nó sẽ dùng mặc định)
                     class: status.class || 'bg-gray-100 text-gray-800' 
                 };
                 // Tạo <option> cho modal
@@ -1155,7 +1136,7 @@
             statusSelect.innerHTML = statusOptions;
         }
         
-        // Hàm render icon (sử dụng Lucide)
+        // Hàm render icon 
         function renderIcons() {
             if (typeof lucide === 'undefined' || !lucide.createElement) {
                 console.warn('Lucide library not loaded.');
@@ -1244,7 +1225,7 @@
             }, 3000);
         }
         function showToast(message, isError = false) {
-            showSimpleToast(message, isError); // Luôn gọi hàm ngắn cho các thông báo chung
+            showSimpleToast(message, isError); 
         }
 
         // --- QUẢN LÝ MODAL ---
@@ -1274,19 +1255,18 @@
             const phone = document.getElementById('SDT').value;
             const password = document.getElementById('MatKhau').value;
 
-            // 1. Xác thực SĐT 10 số (giữ nguyên)
+            // 1. Xác thực SĐT 10 số
             if (!validatePhone(phone)) {
                 showToast('Số điện thoại đăng nhập phải có 10 chữ số.', true);
                 return;
             }
             
-            // 2. TẠO EMAIL GIẢ (PHẦN QUAN TRỌNG NHẤT)
-            // (Bạn phải dùng chính xác đuôi mà bạn đã tạo ở Bước 1)
+            // 2. TẠO EMAIL GIẢ
             const fakeEmail = `${phone}@mail.com`;
 
             // 3. Gọi Supabase Auth với email giả
             const { data, error } = await supaClient.auth.signInWithPassword({
-                email: fakeEmail, // <-- Dùng email giả
+                email: fakeEmail, 
                 password: password,
             });
 
@@ -1294,15 +1274,14 @@
                 console.error('Lỗi đăng nhập:', error);
                 showToast('Đăng nhập thất bại. Sai SĐT hoặc mật khẩu.', true);
             } else {
-                // Đăng nhập thành công
                 showToast('Đăng nhập thành công!');
-                loadInitialData(); // Tải dữ liệu thật
+                loadInitialData();
                 showView('admin');
             }
         }
         
         function handleAdminLogout() {
-            supaClient.auth.signOut(); // Đăng xuất khỏi Supabase
+            supaClient.auth.signOut();
             showView('admin-login');
         }
         
@@ -1337,35 +1316,30 @@
             console.log('Đang thiết lập Realtime cho LICH_HEN VÀ HOA_DON...');
 
             const channel = supaClient
-            .channel('lich_hen_changes') // Đặt tên kênh (channel) bất kỳ
+            .channel('lich_hen_changes')
             .on(
-                'postgres_changes', // Lắng nghe thay đổi CSDL
+                'postgres_changes',
                 { 
-                event: 'INSERT', // Chỉ lắng nghe khi có 'INSERT' (thêm mới)
+                event: 'INSERT',
                 schema: 'public',
-                table: 'LICH_HEN' // Trên bảng LICH_HEN
+                table: 'LICH_HEN' 
                 },
                 async (payload) => {
-                // Khi có lịch hẹn mới, Supabase sẽ gọi hàm này
-                
                 console.log('Phát hiện lịch hẹn MỚI!', payload.new);
                 const maDatLich = payload.new.MaDatLich;
                 const summary = await getAppointmentSummary(maDatLich); // Lấy thông tin chi tiết
                 if (summary) {
                     const mainMsg = `Mới: ${summary.tenKH} (${summary.tenCS})`;
                     const subMsg = `đặt ${summary.serviceCount} dịch vụ vào ${summary.dateTime}`;
-                    showRealtimeNotification(mainMsg, subMsg, false); // Gọi hàm 20s mới
+                    showRealtimeNotification(mainMsg, subMsg, false); // Gọi hàm 20s 
                 } else {
                     // Nếu lấy chi tiết thất bại
                     showToast(`Có lịch hẹn mới. Mã: ${maDatLich.slice(0, 8)}... - Đang chờ xử lý`, true);
                 }
-                // Chạy lại hàm tải và render chính của bạn
-                // Nó sẽ tự động lấy dữ liệu mới nhất (bao gồm cả lịch hẹn mới)
                 loadAndRenderAppointments();
                 }
             )
             .subscribe((status) => {
-                // Hàm này báo cho bạn biết trạng thái kết nối
                 if (status === 'SUBSCRIBED') {
                 console.log('Đã kết nối Realtime thành công!');
                 } else {
@@ -1377,7 +1351,7 @@
             .on(
                 'postgres_changes',
                 { 
-                event: '*', // Lắng nghe INSERT, UPDATE (vì upsert là cả hai)
+                event: '*',
                 schema: 'public',
                 table: 'HOA_DON' 
                 },
@@ -1385,7 +1359,6 @@
                 console.log('Phát hiện thay đổi Hóa đơn (UPDATE/INSERT)!', payload.new);
                 const maKH = payload.new.MaKH;
                 if (maKH) {
-                    // Cập nhật hàng khách hàng đó (Realtime Total Spending)
                     updateCustomerRowRealtime(maKH);
                 }
                 }
@@ -1400,20 +1373,20 @@
         }
 
         function showAdminTab(tabName) {
-            // Bước 1: Ẩn tất cả các tab (Cả bằng class và style)
+            // Ẩn tất cả các tab (Cả bằng class và style)
             document.querySelectorAll('.admin-tab-content').forEach(tab => {
                 tab.classList.add('hidden');
-                tab.style.display = 'none'; // Buộc ẩn
+                tab.style.display = 'none';
             });
 
-            // Bước 2: Hiển thị tab được chọn
+            // Hiển thị tab được chọn
             const activeTab = document.getElementById(`tab-${tabName}`);
             if (activeTab) {
                 activeTab.classList.remove('hidden');
-                activeTab.style.display = 'block'; // Buộc hiển thị
+                activeTab.style.display = 'block';
             }
 
-            // Bước 3: Cập nhật link sidebar và title
+            // Cập nhật link sidebar và title
             document.querySelectorAll('.admin-tab-link').forEach(link => {
                 link.classList.remove('text-primary-light', 'bg-stone-700', 'border-r-4', 'border-primary');
                 link.classList.add('hover:text-primary-light', 'hover:bg-stone-700');
@@ -1433,36 +1406,30 @@
             return value.toLocaleString('vi-VN') + 'đ';
         }
 
-        // HÀM HELPER ĐÃ SỬA (RẤT QUAN TRỌNG)
         function getJoinedAppointment(app) {
-            // 'app' bây giờ là một object lớn đã được join từ Supabase
-            
             const date = new Date(app.NgayDat);
             const appDate = date.toISOString().split('T')[0];
             const appTime = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-            
             let totalDuration = 0;
             let totalPrice = 0;
-            
-            
             const services = (app.CT_PHIEU_DAT || []).map(ct => {
-    const service = ct.DICH_VU || {};
-    const staff = ct.NHAN_VIEN || {};
-    
-    const thoiLuong = service.ThoiLuong || 0;
-    const donGia = service.DonGiaDV || 0;
-    
-    totalDuration += thoiLuong;
-    totalPrice += donGia;
-    
-    return {
-        ...ct,
-        TenDV: service.TenDV || 'N/A',
-        TenNV: staff.TenNV || 'Bất kỳ',
-        DonGiaDV: donGia,
-        ThoiLuong: thoiLuong
-    };
-});
+                const service = ct.DICH_VU || {};
+                const staff = ct.NHAN_VIEN || {};
+                
+                const thoiLuong = service.ThoiLuong || 0;
+                const donGia = service.DonGiaDV || 0;
+                
+                totalDuration += thoiLuong;
+                totalPrice += donGia;
+                
+                return {
+                    ...ct,
+                    TenDV: service.TenDV || 'N/A',
+                    TenNV: staff.TenNV || 'Bất kỳ',
+                    DonGiaDV: donGia,
+                    ThoiLuong: thoiLuong
+                };
+            });
 
             return {
                 ...app, 
@@ -1503,20 +1470,16 @@
                     )
                 `);
 
-            // 2. LỌC PHÍA SERVER (Tốt hơn cho hiệu năng)
+            // 2. LỌC PHÍA SERVER
             if (facilityFilter !== 'all') {
                 query = query.eq('MaCS', facilityFilter);
             }
             if (dateStart) {
-                // (Giả sử NgayDat lưu cả giờ)
                 query = query.gte('NgayDat', `${dateStart}T00:00:00`); 
             }
             if (dateEnd) {
                 query = query.lte('NgayDat', `${dateEnd}T23:59:59`);
             }
-            // (Lọc tìm kiếm 'searchTerm' phức tạp hơn,
-            // chúng ta sẽ lọc ở client sau khi lấy data)
-
             // 3. THỰC THI
             const { data: rawAppointments, error } = await query;
 
@@ -1528,18 +1491,14 @@
             }
 
             // 4. XỬ LÝ VÀ LỌC (CLIENT)
-            // Chạy qua hàm helper để tính toán
             const joinedAppointments = rawAppointments.map(getJoinedAppointment); 
-            
             const filteredData = joinedAppointments.filter(app => {
-                // Lọc tìm kiếm (vì KHACH_HANG đã được join)
-                return searchTerm === '' || 
+                // Lọc tìm kiếmreturn searchTerm === '' || 
                        app.TenKH.toLowerCase().includes(searchTerm) || 
                        app.SDTKH.includes(searchTerm);
             });
             filteredData.sort((a, b) => {
                 // Lấy tên trạng thái từ object global appointmentStatuses
-                // Lưu ý: appointmentStatuses phải đã được load trước đó
                 const statusA = appointmentStatuses[a.MaTT]?.TrangThai || '';
                 const statusB = appointmentStatuses[b.MaTT]?.TrangThai || '';
 
@@ -1551,33 +1510,27 @@
                 if (isPendingA && !isPendingB) return -1;
                 // Nếu b là Chờ xác nhận mà a không phải -> b lên trước (1)
                 if (!isPendingA && isPendingB) return 1;
-
                 // Nếu cùng nhóm (cùng chờ hoặc cùng không chờ), sắp xếp theo ngày giảm dần
-                // Ưu tiên dùng appDate (đã được xử lý) hoặc NgayDat gốc
                 return new Date(b.appDate) - new Date(a.appDate);
             });
 
             // 5. RENDER 
-            tableBody.innerHTML = ''; // Xóa 'Đang tải...'
+            tableBody.innerHTML = '';
             if (filteredData.length === 0) {
                 tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Không tìm thấy lịch hẹn nào.</td></tr>`;
             } else {
                 filteredData.forEach(app => {
                     const tr = document.createElement('tr');
-                    // 'app' bây giờ đã có 'TenKH', 'appTime', v.v.
-                    
                     // Lấy trạng thái từ object global đã nạp
                     const status = appointmentStatuses[app.MaTT] || { TrangThai: 'Không rõ', class: 'bg-gray-100 text-gray-800' };
-                    
                     // Bọc mỗi dịch vụ trong 1 thẻ <div> để ngắt dòng
-                const servicesSummary = app.services.length > 0 
-                ? app.services.map(s => `<div>${s.TenDV}</div>`).join('')
-                : 'N/A';
-            
+                    const servicesSummary = app.services.length > 0 
+                    ? app.services.map(s => `<div>${s.TenDV}</div>`).join('')
+                    : 'N/A';
                     // Bọc mỗi nhân viên trong 1 thẻ <div> để ngắt dòng
-                const staffSummary = app.services.length > 0 
-                ? app.services.map(s => `<div>${s.TenNV || 'N/A'}</div>`).join('') 
-                : 'N/A';
+                    const staffSummary = app.services.length > 0 
+                    ? app.services.map(s => `<div>${s.TenNV || 'N/A'}</div>`).join('') 
+                    : 'N/A';
                     
                     tr.innerHTML = `
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -1603,19 +1556,17 @@
                         </td>
                     `;
                     tableBody.appendChild(tr);
-                    // Áp dụng màu
-                    updateDropdownColor(tr.querySelector('select'));
-                });
+                    });
             }
             
-            // Cập nhật Stats (Hàm này vẫn dùng code cũ)
+            // Cập nhật Stats
             updateAppointmentStats(filteredData);
         }
         const NOTIFICATION_DURATION = 20000; // 20 giây
 
         function showRealtimeNotification(mainMsg, subMsg, isError = false) {
             const toast = document.createElement('div');
-            const toastId = 'toast-' + Date.now(); // Dùng ID duy nhất cho thanh trượt
+            const toastId = 'toast-' + Date.now();
 
             // Nội dung thông báo (Cấu trúc 2 dòng + icon + progress bar)
             toast.innerHTML = `
@@ -1661,6 +1612,7 @@
                 setTimeout(() => toast.remove(), 500);
             }, NOTIFICATION_DURATION);
         }
+
         async function getAppointmentSummary(maDatLich) {
             const { data: app, error } = await supaClient
                 .from('LICH_HEN')
@@ -1701,15 +1653,14 @@
 
             const total = filteredData.length;
     
-            // 2. Sửa logic đếm (count)
+            // 2. Logic đếm (count)
             const pending = filteredData.filter(app => app.MaTT === pendingUuid).length;
     
-        // 3. Sửa logic tính doanh thu
-        // (Giữ nguyên logic của bạn: tính tất cả TRỪ "Đã huỷ" và "Không đến")
+        // 3. Logic tính doanh thu
         const revenue = filteredData.reduce((sum, app) => {
             // Nếu MaTT không phải là "Huỷ" VÀ không phải là "Không đến"
             if (app.MaTT !== cancelledUuid && app.MaTT !== noShowUuid) {
-                return sum + (app.totalPrice || 0); // (Thêm || 0 cho an toàn)
+                return sum + (app.totalPrice || 0);
             }
             return sum;
         }, 0);
@@ -1732,111 +1683,87 @@
         }
         
         async function updateAppointmentStatus(selectElement, maDatLich, maKh, totalPrice) {
-    
-    const newStatusUuid = selectElement.value; // UUID của trạng thái mới
-    
-    updateDropdownColor(selectElement);
+            const newStatusUuid = selectElement.value; // UUID của trạng thái mới
+            // 1. Cập nhật trạng thái của LICH_HEN
+            const { error: updateError } = await supaClient
+                .from('LICH_HEN')
+                .update({ MaTT: newStatusUuid })
+                .eq('MaDatLich', maDatLich);
 
-    // 1. Cập nhật trạng thái của LICH_HEN
-    const { error: updateError } = await supaClient
-        .from('LICH_HEN')
-        .update({ MaTT: newStatusUuid })
-        .eq('MaDatLich', maDatLich);
+            if (updateError) {
+                console.error('Lỗi cập nhật trạng thái:', updateError);
+                showToast(`Lỗi cập nhật: ${updateError.message}`, true);
+                loadAndRenderAppointments();
+                return;
+            }
 
-    if (updateError) {
-        console.error('Lỗi cập nhật trạng thái:', updateError);
-        showToast(`Lỗi cập nhật: ${updateError.message}`, true);
-        loadAndRenderAppointments();
-        return;
-    }
+            showToast('Cập nhật trạng thái thành công!', false);
 
-    showToast('Cập nhật trạng thái thành công!', false);
+            // 2. === LOGIC TẠO HÓA ĐƠN ===
+            const paidStatusUuid = getStatusUuidByName('Đã thanh toán');
 
-    // 2. === LOGIC TẠO HÓA ĐƠN MỚI ===
-    const paidStatusUuid = getStatusUuidByName('Đã thanh toán');
+            // Nếu trạng thái MỚI là "Đã thanh toán"
+            if (newStatusUuid === paidStatusUuid) {
+                console.log(`Trạng thái là "Đã thanh toán". Đang tạo/cập nhật hóa đơn cho ${maDatLich}...`);
 
-    // Nếu trạng thái MỚI là "Đã thanh toán"
-    if (newStatusUuid === paidStatusUuid) {
-        console.log(`Trạng thái là "Đã thanh toán". Đang tạo/cập nhật hóa đơn cho ${maDatLich}...`);
+                // (Đây là dòng kiểm tra "lỗi ngầm")
+                if (!maKh || totalPrice === undefined) { 
+                    console.error('Lỗi: MaKH hoặc TotalPrice bị thiếu (undefined). Không thể tạo hóa đơn.');
+                    showToast('Lỗi: Dữ liệu lịch hẹn bị thiếu MaKH hoặc total.');
+                    return;
+                }
 
-        // (Đây là dòng kiểm tra "lỗi ngầm")
-        if (!maKh || totalPrice === undefined) { 
-            console.error('Lỗi: MaKH hoặc TotalPrice bị thiếu (undefined). Không thể tạo hóa đơn.');
-            showToast('Lỗi: Dữ liệu lịch hẹn bị thiếu MaKH hoặc total.');
-            return;
+                const hoaDonData = {
+                    MaDatLich: maDatLich,
+                    MaKH: maKh,
+                    NgayLap: new Date().toISOString(), 
+                    TongTien: totalPrice
+                };
+
+                const { error: invoiceError } = await supaClient
+                    .from('HOA_DON')
+                    .upsert(hoaDonData, { onConflict: 'MaDatLich' }); 
+
+                if (invoiceError) {
+                    console.error('Lỗi tạo hóa đơn:', invoiceError);
+                    showToast('Cập nhật trạng thái OK, nhưng lỗi tạo hóa đơn!', true);
+                } else {
+                    console.log('Tạo/Cập nhật hóa đơn thành công!');
+                }
+            }
+            
+            // Tải lại toàn bộ danh sách để cập nhật Stats
+            loadAndRenderAppointments();
         }
-
-        const hoaDonData = {
-            MaDatLich: maDatLich,
-            MaKH: maKh,
-            NgayLap: new Date().toISOString(), 
-            TongTien: totalPrice
-        };
-
-        const { error: invoiceError } = await supaClient
-            .from('HOA_DON')
-            .upsert(hoaDonData, { onConflict: 'MaDatLich' }); 
-
-        if (invoiceError) {
-            console.error('Lỗi tạo hóa đơn:', invoiceError);
-            showToast('Cập nhật trạng thái OK, nhưng lỗi tạo hóa đơn!', true);
-        } else {
-            console.log('Tạo/Cập nhật hóa đơn thành công!');
-        }
-    }
-    
-    // Tải lại toàn bộ danh sách để cập nhật Stats
-    loadAndRenderAppointments();
-}
 
         async function loadStatusData() {
-    const { data: statuses, error } = await supaClient
-        .from('TT_LICH_HEN') 
-        .select('MaTT, TrangThai'); // Lấy UUID và Tên
+            const { data: statuses, error } = await supaClient
+                .from('TT_LICH_HEN') 
+                .select('MaTT, TrangThai'); // Lấy UUID và Tên
 
-    if (error) {
-        console.error('LỖI: Không tải được danh sách trạng thái:', error);
-        return;
-    }
-    appointmentStatuses = {};
-    // Lặp qua kết quả từ DB
-    statuses.forEach(status => {
-        const uuid = status.MaTT;
-        const name = status.TrangThai;
-        // Lấy lớp CSS từ "bản đồ" 
-        const cssClass = statusColorMap[name] || 'bg-gray-100 text-gray-800'; 
-
-        // Nạp vào object toàn cục
-        // Key là UUID, value là object chứa Tên và Class
-        appointmentStatuses[uuid] = {
-            TrangThai: name,
-            class: cssClass,
-            count: 0 // Khởi tạo count = 0 (cho hàm báo cáo)
-        };
-    });
-
-    console.log('Đã nạp xong dữ liệu trạng thái:', appointmentStatuses);
-}
-        
-        function updateDropdownColor(selectElement) {
-            Object.keys(appointmentStatuses).forEach(key => {
-                selectElement.classList.remove(...appointmentStatuses[key].class.split(' '));
-            });
-            const status = appointmentStatuses[selectElement.value];
-            if (status) {
-                selectElement.classList.add(...status.class.split(' '));
+            if (error) {
+                console.error('LỖI: Không tải được danh sách trạng thái:', error);
+                return;
             }
+            appointmentStatuses = {};
+            // Lặp qua kết quả từ DB
+            statuses.forEach(status => {
+                const uuid = status.MaTT;
+                const name = status.TrangThai;
+                // Nạp vào object toàn cục
+                // Key là UUID, value là object chứa Tên và Class
+                appointmentStatuses[uuid] = {
+                    TrangThai: name,
+                    class: cssClass,
+                    count: 0 // Khởi tạo count = 0 (cho hàm báo cáo)
+                };
+            });
+
+            console.log('Đã nạp xong dữ liệu trạng thái:', appointmentStatuses);
         }
         
-        async function deleteAppointment(maDatLich) {
-            
-            // **LƯU Ý QUAN TRỌNG VỀ CSDL:**
-            // Do ràng buộc khóa ngoại, bạn phải xóa
-            // các dòng trong CT_PHIEU_DAT (và HOA_DON, DANH_GIA)
-            // trước khi xóa LICH_HEN.
-            
-            // Cách 1: Xóa thủ công (an toàn)
-            // (Nếu bạn có Bảng HOA_DON, cũng phải xóa nó trước)
+       async function deleteAppointment(maDatLich) {
+            // Xóa các dòng trong CT_PHIEU_DAT (và HOA_DON, DANH_GIA) trước khi xóa LICH_HEN.
             const { error: ctError } = await supaClient
                 .from('CT_PHIEU_DAT')
                 .delete()
@@ -1847,11 +1774,6 @@
                 showToast(`Lỗi: ${ctError.message}`, true);
                 return;
             }
-
-            // Cách 2: Bạn nên thiết lập "ON DELETE CASCADE"
-            // trong CSDL (Supabase) cho các khóa ngoại
-            // trỏ đến LICH_HEN. Nếu làm vậy, bạn chỉ cần code ở dưới.
-
             // Sau khi xóa các bảng con, xóa bảng cha
             const { error } = await supaClient
                 .from('LICH_HEN')
@@ -1888,7 +1810,7 @@
             
             // (Dropdown trạng thái đã được nạp bởi loadAndPopulateSelectors)
             
-            // Lấy dữ liệu JOIN y hệt như hàm loadAndRenderAppointments
+            // Lấy dữ liệu JOIN 
             const { data: app, error } = await supaClient
                 .from('LICH_HEN')
                 .select(`
@@ -1917,8 +1839,6 @@
             
             const statusSelect = document.getElementById('app-MaTT');
             statusSelect.value = app.MaTT;
-            updateDropdownColor(statusSelect); // Thêm màu cho modal
-            
             openAdminModal('appointment-modal');
         }
 
@@ -1938,7 +1858,7 @@
             // Dữ liệu cập nhật cho LICH_HEN
             const appData = {
                 "MaTT": document.getElementById('app-MaTT').value,
-                "NgayDat": `${ngay}T${gio}:00` // Lưu lại dạng ISO 8601
+                "NgayDat": `${ngay}T${gio}:00` 
             };
 
             // 1. Cập nhật LICH_HEN
@@ -1952,12 +1872,9 @@
                 showToast(`Lỗi: ${appError.message}`, true);
                 return;
             }
-            
-            // (Code này giả định rằng modal này cũng cập nhật
-            // cả KHACH_HANG)
             const tenKH = document.getElementById('app-TenKH').value;
             
-            // 2. Tìm MaKH từ MaDatLich (cần thiết để update KHACH_HANG)
+            // 2. Tìm MaKH từ MaDatLich
             const { data: lichHen } = await supaClient.from('LICH_HEN').select('MaKH').eq('MaDatLich', maDatLich).single();
             
             if (lichHen && lichHen.MaKH) {
@@ -1979,7 +1896,7 @@
         }
 
         async function showAppointmentDetails(maDatLich) {
-            // 1. Lấy dữ liệu JOIN y hệt như hàm loadAndRenderAppointments
+            // 1. Lấy dữ liệu JOIN 
             const { data: app, error } = await supaClient
                 .from('LICH_HEN')
                 .select(`
@@ -2001,11 +1918,11 @@
                 return;
             }
 
-            // 2. Dùng hàm helper cũ để tính toán
+            // 2. Dùng hàm helper  để tính toán
             const joinedApp = getJoinedAppointment(app);
             const status = appointmentStatuses[joinedApp.MaTT] || { TrangThai: 'N/A', class: '' };
 
-            // 3. Nạp dữ liệu vào modal (Code cũ của bạn)
+            // 3. Nạp dữ liệu vào modal
             document.getElementById('details-TenKH').textContent = joinedApp.TenKH;
             document.getElementById('details-SDTKH').textContent = joinedApp.SDTKH;
             document.getElementById('details-TenCS').textContent = joinedApp.TenCS;
@@ -2059,7 +1976,7 @@
             
             // 3. Thực thi query
             const { data: customers, error } = await query;
-console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
+            console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
             if (error) {
                 console.error('Lỗi tải khách hàng:', error);
                 showToast('Lỗi tải khách hàng.', true);
@@ -2082,8 +1999,6 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
             } else {
                 customers.forEach(cust => {
                     const tr = document.createElement('tr');
-                    // Code render HTML của bạn vẫn giữ nguyên vì 'cust' 
-                    // đã có 'totalSpending' nhờ View.
                     tr.innerHTML = `
                         <td class="px-6 py-4 whitespace-nowrap">
                             <button onclick="showCustomerHistory('${cust.MaKH}', '${cust.TenKH}')" 
@@ -2114,7 +2029,7 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
             openAdminModal('customer-history-modal');
 
             // 2. Lấy dữ liệu từ Supabase
-            // (Lấy tất cả lịch hẹn của MaKH này, sắp xếp mới nhất lên đầu)
+            // (Lấy tất cả lịch hẹn của MaKH, sắp xếp mới nhất lên đầu)
             const { data: appointments, error } = await supaClient
                 .from('LICH_HEN')
                 .select(`
@@ -2210,8 +2125,6 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
             
             if (maKH) {
                 title.textContent = "Sửa thông tin khách hàng";
-                
-                // Lấy dữ liệu mới nhất
                 const { data: customer, error } = await supaClient
                     .from('KHACH_HANG') // Lấy từ bảng gốc
                     .select('*')
@@ -2287,11 +2200,9 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
                 
             if (error) {
                 console.error('Lỗi xóa khách hàng:', error);
-                // (Bạn có thể cần kiểm tra lỗi "foreign key" ở đây)
                 showToast(`Lỗi: ${error.message}`, true);
             } else {
                 showToast('Đã xóa khách hàng.');
-                // TẢI LẠI DỮ LIỆU TỪ VIEW
                 loadAndRenderCustomers();
             }
         }
@@ -2306,8 +2217,7 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
             const expertiseFilter = document.getElementById('filter-staff-MaNhomDV').value;
             const facilityFilter = document.getElementById('filter-staff-MaCS').value;
 
-            // 1. Lệnh JOIN: Lấy NHAN_VIEN và liên kết
-            // với NHOM_DV và CO_SO
+            // 1. Lệnh JOIN: Lấy NHAN_VIEN và liên kết với NHOM_DV và CO_SO
             let query = supaClient
                 .from('NHAN_VIEN')
                 .select(`
@@ -2401,7 +2311,7 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
                 .order('NgayDat', { foreignTable: 'LICH_HEN', ascending: true }); // Sắp xếp ngày tăng dần
 
             // 4. Render dữ liệu
-            listEl.innerHTML = ''; // Xóa 'Đang tải...'
+            listEl.innerHTML = '';
 
             if (error) {
                 console.error('Lỗi tải lịch nhân viên:', error);
@@ -2410,10 +2320,9 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
             }
 
             if (!schedules || schedules.length === 0) {
-                emptyEl.classList.remove('hidden'); // Hiện thông báo trống
+                emptyEl.classList.remove('hidden');
             } else {
                 schedules.forEach(item => {
-                    // item.LICH_HEN là object chứa thông tin lịch
                     const booking = item.LICH_HEN;
                     const serviceName = item.DICH_VU?.TenDV || 'Dịch vụ đã xóa';
                     const customerName = booking.KHACH_HANG?.TenKH || 'Khách vãng lai';
@@ -2448,9 +2357,6 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
             const title = document.getElementById('staff-modal-title');
             const form = document.getElementById('staff-form');
             form.reset();
-            
-            // (Các dropdown đã được nạp bởi loadAndPopulateSelectors)
-            
             if (maNV) {
                 title.textContent = "Sửa thông tin nhân viên";
                 // Lấy data GỐC
@@ -2484,8 +2390,6 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
             }
             
             const maNV = document.getElementById('MaNV').value;
-            
-            // Dữ liệu phải khớp CSDL
             const staffData = {
                 "TenNV": document.getElementById('TenNV').value,
                 "SDTNV": phone,
@@ -2514,7 +2418,7 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
             } else {
                 showToast(successMessage);
                 closeAdminModal('staff-modal');
-                loadAndRenderStaff(); // Tải lại bảng
+                loadAndRenderStaff();
             }
         }
         async function deleteStaff(maNV) {
@@ -2528,27 +2432,24 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
                 showToast(`Lỗi: ${error.message}`, true);
             } else {
                 showToast('Đã xóa nhân viên.');
-                loadAndRenderStaff(); // Tải lại bảng
-            }
+                loadAndRenderStaff();
+        }
         }
 
 
         // --- TAB 4: QUẢN LÝ DỊCH VỤ ---
-        
-      // HÀM MỚI (ASYNC) THAY THẾ renderServicesTable()
-        async function loadAndRenderServices() {
+       async function loadAndRenderServices() {
             const tableBody = document.getElementById('services-table-body');
             tableBody.innerHTML = '';
             const searchTerm = document.getElementById('search-service').value.toLowerCase();
 
-            // 1. Lệnh JOIN: Lấy DICH_VU và liên kết
-            // với NHOM_DV (để lấy NhomDV)
+            // 1. Lệnh JOIN: Lấy DICH_VU và liên kết với NHOM_DV (để lấy NhomDV)
             let query = supaClient
                 .from('DICH_VU')
                 .select(`
                     *,
                     NHOM_DV (NhomDV) 
-                `); // Chỉ lấy cột NhomDV từ bảng NHOM_DV
+                `);
 
             // 2. Thực thi query
             const { data: services, error } = await query;
@@ -2596,8 +2497,6 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
             const form = document.getElementById('service-form');
             form.reset();
             
-            // (Dropdown đã được populate ở hàm populateInitialSelectors)
-            
             if (maDV) {
                 title.textContent = "Sửa dịch vụ";
                 // Lấy data GỐC
@@ -2626,7 +2525,6 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
             event.preventDefault();
             const maDV = document.getElementById('MaDV').value;
             
-            // Dữ liệu phải khớp CSDL
             const serviceData = {
                 "TenDV": document.getElementById('TenDV').value,
                 "MaNhomDV": document.getElementById('service-MaNhomDV').value,
@@ -2677,7 +2575,6 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
 
         // Modal Quản lý Nhóm Dịch vụ (NHOM_DV)
         async function openServiceGroupModal() {
-            // Tải danh sách nhóm mới nhất khi mở modal
             await renderServiceGroupList(); 
             openAdminModal('service-group-modal');
         }
@@ -2710,19 +2607,18 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
         async function handleAddServiceGroup(event) {
             event.preventDefault();
             const inputName = document.getElementById('NhomDV_new');
-            
             const newName = inputName.value.trim();
             
-            // 1. Chỉ kiểm tra Tên nhóm
+            // 1. Kiểm tra Tên nhóm
             if (!newName) {
                 showToast('Vui lòng nhập Tên nhóm mới.', true);
                 return;
             }
             
-            // 2. Chỉ insert Tên nhóm (NhomDV)
+            // 2. Insert Tên nhóm (NhomDV)
             const { error } = await supaClient
                 .from('NHOM_DV')
-                .insert({ "NhomDV": newName }); // (Supabase sẽ tự sinh MaNhomDV)
+                .insert({ "NhomDV": newName });
 
             if (error) {
                 console.error('Lỗi thêm nhóm DV:', error);
@@ -2730,9 +2626,7 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
             } else {
                 showToast('Đã thêm nhóm dịch vụ.');
                 inputName.value = '';
-                // Tải lại danh sách trong modal
                 renderServiceGroupList(); 
-                // Tải lại tất cả dropdowns trong trang
                 loadAndPopulateSelectors(); 
             }
         }
@@ -2743,58 +2637,58 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
         let lastVipReportData = [];
         
         function exportToCSV(data, filename, title) {
-    if (!data || data.length === 0) {
-        showToast('Không có dữ liệu để xuất.', true);
-        return;
-    }
+            if (!data || data.length === 0) {
+                showToast('Không có dữ liệu để xuất.', true);
+                return;
+            }
 
-    // 1. Lấy tiêu đề cột (headers) từ object đầu tiên
-    const headers = Object.keys(data[0]);
-    
-    // 2. Tạo nội dung CSV
-    const csvHeader = headers.join(',');
-    const csvRows = data.map(row => {
-        return headers.map(header => {
-            let cell = String(row[header] === null || row[header] === undefined ? '' : row[header]);
-            cell = cell.includes(',') ? `"${cell.replace(/"/g, '""')}"` : cell;
-            return cell;
-        }).join(',');
-    });
+            // 1. Lấy tiêu đề cột (headers) từ object đầu tiên
+            const headers = Object.keys(data[0]);
+            
+            // 2. Tạo nội dung CSV
+            const csvHeader = headers.join(',');
+            const csvRows = data.map(row => {
+                return headers.map(header => {
+                    let cell = String(row[header] === null || row[header] === undefined ? '' : row[header]);
+                    cell = cell.includes(',') ? `"${cell.replace(/"/g, '""')}"` : cell;
+                    return cell;
+                }).join(',');
+            });
 
-    // 3. === GỘP TIÊU ĐỀ BÁO CÁO VÀ DỮ LIỆU ===
-    const contentArray = [];
+            // 3. === GỘP TIÊU ĐỀ BÁO CÁO VÀ DỮ LIỆU ===
+            const contentArray = [];
 
-    if (title) {
-        contentArray.push(`"${title.replace(/"/g, '""')}"`);
-        contentArray.push(""); 
-    }
+            if (title) {
+                contentArray.push(`"${title.replace(/"/g, '""')}"`);
+                contentArray.push(""); 
+            }
 
-    contentArray.push(csvHeader);
-    contentArray.push(...csvRows);
+            contentArray.push(csvHeader);
+            contentArray.push(...csvRows);
 
-    const csvContent = contentArray.join('\n');
-    
-    // 4. Tạo file và Tải về
-    const bom = '\uFEFF'; // BOM cho tiếng Việt
-    const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const csvContent = contentArray.join('\n');
+            
+            // 4. Tạo file và Tải về
+            const bom = '\uFEFF'; // BOM cho tiếng Việt
+            const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
 
-    const link = document.createElement("a");
-    if (link.download !== undefined) { 
-        const url = URL.createObjectURL(blob);
-        link.setAttribute("href", url);
-        link.setAttribute("download", filename);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    }
-}
+            const link = document.createElement("a");
+            if (link.download !== undefined) { 
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }
+        }
         async function generateReport() {
             const dateStart = document.getElementById('report-date-start').value;
             const dateEnd = document.getElementById('report-date-end').value;
-            const type = document.getElementById('report-type').value; // 'revenue' or 'count'
-            const groupBy = document.getElementById('report-group-by').value; // 'DICH_VU', 'KHACH_HANG'...
+            const type = document.getElementById('report-type').value;
+            const groupBy = document.getElementById('report-group-by').value;
             
             if (!dateStart || !dateEnd) {
                 showToast('Vui lòng chọn cả ngày bắt đầu và kết thúc.', true);
@@ -2894,48 +2788,47 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
         }
 
         function exportGeneralReport() {
-    if (lastGeneralReportData.length === 0) {
-        showToast('Vui lòng chạy báo cáo trước khi xuất.', true);
-        return;
-    }
-    
-    // 1. Lấy cài đặt hiện tại
-    const type = document.getElementById('report-type').value;
-    const groupBy = document.getElementById('report-group-by').value;
-    const filename = `bao_cao_${type}_theo_${groupBy}.csv`;
-    
-    // 2. === LOGIC CHUYỂN ĐỔI MỚI ===
-    // (Bỏ group_id, đổi tên header sang tiếng Việt)
-    const valueHeader = (type === 'revenue') ? 'Doanh Thu' : 'Số Lượng';
-    let transformedData = [];
+            if (lastGeneralReportData.length === 0) {
+                showToast('Vui lòng chạy báo cáo trước khi xuất.', true);
+                return;
+            }
+            
+            // 1. Lấy cài đặt hiện tại
+            const type = document.getElementById('report-type').value;
+            const groupBy = document.getElementById('report-group-by').value;
+            const filename = `bao_cao_${type}_theo_${groupBy}.csv`;
+            
+            // 2. LOGIC CHUYỂN ĐỔI
+            const valueHeader = (type === 'revenue') ? 'Doanh Thu' : 'Số Lượng';
+            let transformedData = [];
 
-    if (groupBy === 'KHACH_HANG') {
-        transformedData = lastGeneralReportData.map(row => ({
-            "Tên Khách Hàng": row.group_name,
-            "Số Điện Thoại": row.group_detail,
-            [valueHeader]: row.report_value
-        }));
-    } else if (groupBy === 'DICH_VU') {
-        transformedData = lastGeneralReportData.map(row => ({
-            "Tên Dịch Vụ": row.group_name,
-            "Nhóm Dịch Vụ": row.group_detail,
-            [valueHeader]: row.report_value
-        }));
-    } else if (groupBy === 'NHAN_VIEN') {
-        transformedData = lastGeneralReportData.map(row => ({
-            "Tên Nhân Viên": row.group_name,
-            "Chuyên Môn": row.group_detail,
-            [valueHeader]: row.report_value
-        }));
-    } else { // NHOM_DV
-        transformedData = lastGeneralReportData.map(row => ({
-            "Nhóm Dịch Vụ": row.group_name,
-            [valueHeader]: row.report_value
-        }));
-    }
-   const title = document.getElementById('report-title').textContent;
-    exportToCSV(transformedData, filename, title);
-}
+            if (groupBy === 'KHACH_HANG') {
+                transformedData = lastGeneralReportData.map(row => ({
+                    "Tên khách hàng": row.group_name,
+                    "Số điện thoại": row.group_detail,
+                    [valueHeader]: row.report_value
+                }));
+            } else if (groupBy === 'DICH_VU') {
+                transformedData = lastGeneralReportData.map(row => ({
+                    "Tên dịch vụ": row.group_name,
+                    "Nhóm dịch vụ": row.group_detail,
+                    [valueHeader]: row.report_value
+                }));
+            } else if (groupBy === 'NHAN_VIEN') {
+                transformedData = lastGeneralReportData.map(row => ({
+                    "Tên nhân viên": row.group_name,
+                    "Chuyên môn": row.group_detail,
+                    [valueHeader]: row.report_value
+                }));
+            } else { 
+                transformedData = lastGeneralReportData.map(row => ({
+                    "Nhóm dịch vụ": row.group_name,
+                    [valueHeader]: row.report_value
+                }));
+            }
+        const title = document.getElementById('report-title').textContent;
+            exportToCSV(transformedData, filename, title);
+        }
         
         async function generateVipReport() {
             const monthInput = document.getElementById('vip-report-month').value; // 'YYYY-MM'
@@ -2950,7 +2843,7 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
             });
 
             if (error) {
-                console.error('Lỗi báo cáo VIP:', error);
+                console.error('Lỗi báo cáo KHTT:', error);
                 showToast(`Lỗi: ${error.message}`, true);
                 lastVipReportData = [];;
                 return;
@@ -2959,7 +2852,7 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
 
             // 2. Render kết quả
             const [year, month] = monthInput.split('-');
-            const title = `Báo cáo khách hàng thân thiết (Tháng ${month}/${year})`;
+            const title = `Báo cáo khách hàng thân thiết (tháng ${month}/${year})`;
             document.getElementById('vip-report-title').textContent = title;
             
             const body = document.getElementById('vip-report-table-body');
@@ -2987,22 +2880,22 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
         }
 
         function exportVipReport() {
-    if (lastVipReportData.length === 0) {
-        showToast('Vui lòng chạy báo cáo trước khi xuất.', true);
-        return;
-    }
-    const filename = 'bao_cao_khach_hang_vip.csv';
-    
-    // CHUYỂN ĐỔI DỮ LIỆU (Bỏ MaKH, sửa lại tên key)
-    const transformedData = lastVipReportData.map(item => ({
-        "Tên Khách Hàng": item.TenKH,
-        "Số Điện Thoại": item.SDTKH,
-        "Chi Tiêu (Tháng)": item.spending_this_month,
-        "Số Tháng VIP Liên Tiếp": item.consecutive_months
-    }));
-    const title = document.getElementById('vip-report-title').textContent;
-    exportToCSV(transformedData, filename, title);
-}
+            if (lastVipReportData.length === 0) {
+                showToast('Vui lòng chạy báo cáo trước khi xuất.', true);
+                return;
+            }
+            const filename = 'bao_cao_khach_hang_than_thiet.csv';
+            
+            // CHUYỂN ĐỔI DỮ LIỆU
+            const transformedData = lastVipReportData.map(item => ({
+                "Tên khách hàng": item.TenKH,
+                "Số điện thoại": item.SDTKH,
+                "Chi tiêu/tháng": item.spending_this_month,
+                "Số tháng VIP liên tiếp": item.consecutive_months
+            }));
+            const title = document.getElementById('vip-report-title').textContent;
+            exportToCSV(transformedData, filename, title);
+        }
 
         async function generateStatusReport() {
             const dateStart = document.getElementById('status-report-date-start').value;
@@ -3032,7 +2925,7 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
 
             const dateStartText = new Date(dateStart).toLocaleDateString('vi-VN');
             const dateEndText = new Date(dateEnd).toLocaleDateString('vi-VN');
-            const title = `Báo cáo tỉ lệ lịch hẹn theo trạng thái (Từ ${dateStartText} - ${dateEndText}, Tổng: ${totalAppointments} lịch hẹn)`;
+            const title = `Báo cáo tỉ lệ lịch hẹn theo trạng thái (từ ${dateStartText} - ${dateEndText}, tổng: ${totalAppointments} lịch hẹn)`;
             document.getElementById('status-report-title').textContent = title;
             
             const body = document.getElementById('status-report-table-body');
@@ -3041,7 +2934,7 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
             if (totalAppointments === 0) {
                 body.innerHTML = `<tr><td colspan="3" class="px-6 py-4 text-center text-gray-500">Không có dữ liệu lịch hẹn trong khoảng thời gian này.</td></tr>`;
             } else {
-                // Sắp xếp dữ liệu (ví dụ)
+                // Sắp xếp dữ liệu 
                 const allStatuses = { ...appointmentStatuses }; // Dùng object global đã nạp
                 reportData.forEach(item => {
                     if (allStatuses[item.MaTT]) {
@@ -3069,21 +2962,22 @@ console.log('DỮ LIỆU KHÁCH HÀNG ĐÃ TẢI:', customers);
             document.getElementById('status-report-results-container').classList.remove('hidden');
         }
 
-function exportStatusReport() {
-    if (lastStatusReportData.length === 0) {
-        showToast('Vui lòng chạy báo cáo trước khi xuất.', true);
-        return;
-    }
-    const filename = 'bao_cao_ti_le_trang_thai.csv';
-    
-    // CHUYỂN ĐỔI DỮ LIỆU (Sửa lại tên key)
-    const transformedData = lastStatusReportData.map(item => ({
-        "Tên Trạng Thái": appointmentStatuses[item.MaTT] ? appointmentStatuses[item.MaTT].TrangThai : item.MaTT,
-        "Số Lượng": item.count
-    }));
-    const title = document.getElementById('status-report-title').textContent;
-    exportToCSV(transformedData, filename, title);
-}
+        function exportStatusReport() {
+            if (lastStatusReportData.length === 0) {
+                showToast('Vui lòng chạy báo cáo trước khi xuất.', true);
+                return;
+            }
+            const filename = 'bao_cao_ti_le_trang_thai.csv';
+            
+            // CHUYỂN ĐỔI DỮ LIỆU
+            const transformedData = lastStatusReportData.map(item => ({
+                "Trạng thái": appointmentStatuses[item.MaTT] ? appointmentStatuses[item.MaTT].TrangThai : item.MaTT,
+                "Số lượng": item.count,
+                "Tỉ lệ": item.percentage
+            }));
+            const title = document.getElementById('status-report-title').textContent;
+            exportToCSV(transformedData, filename, title);
+        }
 
         // --- HÀM XÓA CHUNG ---
         
