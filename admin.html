@@ -2970,13 +2970,19 @@
                 return;
             }
             const filename = 'bao_cao_ti_le_trang_thai.csv';
+            const totalAppointments = lastStatusReportData.reduce((sum, item) => sum + (item.count || 0), 0);
             
             // CHUYỂN ĐỔI DỮ LIỆU
-            const transformedData = lastStatusReportData.map(item => ({
-                "Trạng thái": appointmentStatuses[item.MaTT] ? appointmentStatuses[item.MaTT].TrangThai : item.MaTT,
-                "Số lượng": item.count,
-                "Tỉ lệ": item.percentage,
-            }));
+            const transformedData = lastStatusReportData.map(item => {
+                const currentPercentage = totalAppointments > 0 
+                    ? ((item.count / totalAppointments) * 100).toFixed(1): 0;
+
+                return {
+                    "Trạng thái": appointmentStatuses[item.MaTT] ? appointmentStatuses[item.MaTT].TrangThai : item.MaTT,
+                    "Số lượng": item.count,
+                    "Tỉ lệ": currentPercentage + '%'
+                };
+            });
             const title = document.getElementById('status-report-title').textContent;
             exportToCSV(transformedData, filename, title);
         }
