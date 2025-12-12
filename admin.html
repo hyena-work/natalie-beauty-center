@@ -1493,7 +1493,8 @@
             // 4. XỬ LÝ VÀ LỌC (CLIENT)
             const joinedAppointments = rawAppointments.map(getJoinedAppointment); 
             const filteredData = joinedAppointments.filter(app => {
-                // Lọc tìm kiếmreturn searchTerm === '' || 
+                // Lọc tìm kiếm
+                return searchTerm === '' || 
                        app.TenKH.toLowerCase().includes(searchTerm) || 
                        app.SDTKH.includes(searchTerm);
             });
