@@ -1751,10 +1751,12 @@
             statuses.forEach(status => {
                 const uuid = status.MaTT;
                 const name = status.TrangThai;
+                const cssClass = 'bg-gray-100 text-gray-800';
                 // Nạp vào object toàn cục
                 // Key là UUID, value là object chứa Tên và Class
                 appointmentStatuses[uuid] = {
                     TrangThai: name,
+                    class: cssClass,
                     count: 0 // Khởi tạo count = 0 (cho hàm báo cáo)
                 };
             });
