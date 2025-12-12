@@ -2975,7 +2975,7 @@
             const transformedData = lastStatusReportData.map(item => ({
                 "Trạng thái": appointmentStatuses[item.MaTT] ? appointmentStatuses[item.MaTT].TrangThai : item.MaTT,
                 "Số lượng": item.count,
-                "Tỉ lệ": item.percentage
+                "Tỉ lệ": item.percentage,
             }));
             const title = document.getElementById('status-report-title').textContent;
             exportToCSV(transformedData, filename, title);
